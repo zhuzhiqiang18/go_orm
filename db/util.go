@@ -9,10 +9,22 @@ import (
 反射获取 字段
 */
 func getPram(obj interface{}) (map[string]interface{},string)  {
-	ob := reflect.TypeOf(obj)
-	obValue := reflect.ValueOf(obj)
+
+	var ob reflect.Type
+	var obValue reflect.Value
+
+	//是否是指针
+	if reflect.TypeOf(obj).Kind() == reflect.Ptr{
+		ob = reflect.TypeOf(obj).Elem()
+		obValue = reflect.ValueOf(obj).Elem()
+	}else{
+		ob = reflect.TypeOf(obj)
+		obValue = reflect.ValueOf(obj)
+	}
+
+
 	fieldKV := make(map[string]interface{})
-	if ob.Kind() == reflect.Struct {
+
 		for i:=0;i<ob.NumField();i++{
 			//获取字段
 			f:=ob.Field(i).Name
@@ -27,7 +39,7 @@ func getPram(obj interface{}) (map[string]interface{},string)  {
 				fieldKV[f] =conver(v)
 			}
 		}
-	}
+
 	return fieldKV,ob.Name()
 }
 /**

@@ -25,7 +25,6 @@ func Delete(obj interface{},whereSql ...string) int64  {
 }
 
 func exe(sql string,para []interface{}) int64  {
-
 	logrus.WithFields(logrus.Fields{}).Info(sql)
 	stmt, err := conn.GetDB().Prepare(sql)
 	if err != nil {
@@ -41,3 +40,12 @@ func exe(sql string,para []interface{}) int64  {
 	re,_ := result.RowsAffected()
 	return re
 }
+
+/**
+直接slq执行
+ */
+func nativeSqlUpdate(nativeSql string,parameters []interface{}) int64  {
+	return exe(nativeSql,parameters)
+}
+
+

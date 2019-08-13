@@ -12,7 +12,7 @@ func TestSave(){
 	student.Address="中国"
 	student.No="123456"
 	student.ClassId=1
-	res:= db.Save(student)
+	res:= db.Save(&student)
 	fmt.Println("改变行数",res)
 }
 
