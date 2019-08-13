@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 /**
 学生
  */
@@ -9,4 +11,6 @@ type Student struct {
 	Address string `sql:"address"`
 	No string
 	ClassId int `sql:"class_id"`
+	Create time.Time `sql:"create_date"`
+	IsReading bool `sql:"is_reading"`
 }

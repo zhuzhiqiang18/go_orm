@@ -3,12 +3,13 @@ package db
 import (
 	"fmt"
 	"reflect"
+	"time"
 )
 
 /**
-反射获取 字段
+反射获取 属性不为空的字段
 */
-func getPram(obj interface{}) (map[string]interface{},string)  {
+func getNotValuePram(obj interface{}) (map[string]interface{},string)  {
 
 	var ob reflect.Type
 	var obValue reflect.Value
@@ -27,6 +28,12 @@ func getPram(obj interface{}) (map[string]interface{},string)  {
 
 		for i:=0;i<ob.NumField();i++{
 			//获取字段
+			fType := ob.Field(i)
+			if(fType.Type.Kind() == reflect.Struct){
+				if(fType.Type.Name() != "Time"){
+					continue
+				}
+			}
 			f:=ob.Field(i).Name
 			//获取字段value
 			v := obValue.FieldByName(f)
@@ -36,7 +43,7 @@ func getPram(obj interface{}) (map[string]interface{},string)  {
 				f=tag
 			}
 			if isNotBlank(v){
-				fieldKV[f] =conver(v)
+				fieldKV[f] =conver(v,fType)
 			}
 		}
 
@@ -71,7 +78,7 @@ func isNotBlank(value reflect.Value) bool {
  */
 func insertSql(o interface{}) (string, []interface{}) {
 	value := make([]interface{},0,10)
-	para,tableName := getPram(o)
+	para,tableName := getNotValuePram(o)
 	sql := "insert into "+tableName+"(%s) values (%s)"
 	sqlPrefix := ""
 	sqlSuffix := ""
@@ -91,7 +98,7 @@ func getUpdateSql(o interface{},sqlWhere ...string) (string, []interface{})  {
 	wherePara := make([]interface{},0,5)
    // tags := getTag(o,sqlWhere...)
 	value := make([]interface{},0,10)
-	para,tableName := getPram(o)
+	para,tableName := getNotValuePram(o)
 	sql := "update "+tableName+" set %s  %s"
 	sqlPrefix := ""
 	sqlSuffix := "where 1=1 "
@@ -123,7 +130,7 @@ func getDeleteSql(o interface{},sqlwhere ...string) (string, []interface{})  {
 	wherePara := make([]interface{},0,5)
     //tags := getTag(o,sqlwhere...)
 	value := make([]interface{},0,10)
-	para,tableName := getPram(o)
+	para,tableName := getNotValuePram(o)
 	sql := "delete from "+tableName+" %s "
 
 	sqlSuffix := "where 1=1 "
@@ -147,22 +154,93 @@ func getDeleteSql(o interface{},sqlwhere ...string) (string, []interface{})  {
 	return fmt.Sprintf(sql,sqlSuffix[:len(sqlSuffix)]) ,value
 }
 /**
+拼接查询
+ */
+func find(o interface{}, findWhere map[string]interface{}, findFields ...string) (string, []interface{}) {
+	value := make([]interface{},0,10)
+	oType := reflect.TypeOf(o)
+	if(oType.Kind() == reflect.Ptr){
+		oType = oType.Elem()
+	}
+	//结构体
+
+	switch oType.Kind() {
+
+	case reflect.Struct:
+		//oType = reflect.Type(o).Kind()
+	case reflect.Map:
+
+	}
+
+	sql:= "select "
+	if len(findFields)>0 {
+		for _,f := range findFields {
+			sql += f +"  ,"
+		}
+	}else {
+		sql += " * ,"
+	}
+	sql=sql[:len(sql)-1]
+
+	//todo  关联关系
+    sql+= " from " + oType.Name()
+	where := ""
+    if(findFields!=nil || len(findWhere)>0){
+		where = " where 1=1  "
+		for k,v := range findWhere{
+			where+="and "+k+"=? "
+			value=append(value,v)
+		}
+	}
+
+
+
+	return sql+where,value
+}
+
+type PageInfo struct {
+	CurPage int64
+	PageSize int64
+	TotalRecord int64
+	TotalPageNum int64
+}
+
+
+//分页 todo
+/*func page(o interface{}, findWhere map[string]interface{}, findFields ...string) (string, []interface{}){
+	limit (curPage-1)*pageSize,pageSize
+}*/
+
+
+
+
+
+/**
 数据类型转换
  */
-func conver(value reflect.Value) interface{}  {
+func conver(value reflect.Value,fType reflect.StructField) interface{}  {
 	switch value.Kind() {
 	case reflect.String:
 		return value.String()
 	case reflect.Bool:
-		return value.Int()
+		if value.Bool(){
+			return 1
+		}
+		return 0
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return value.Int()
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		return value.Uint()
 	case reflect.Float32, reflect.Float64:
 		return value.Float()
+	case reflect.Struct:
+		if fType.Type.Name()=="Time" {
+			i := value.Interface().(time.Time)
+			return i.Format("2006-01-02 15:04:05")
+		}
+		return nil
 	default:
-		panic("只支持基本类型")
+		return nil
 	}
 }
 /**

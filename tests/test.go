@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go_web_curd/db"
 	"go_web_curd/model"
+	"time"
 )
 
 func TestSave(){
@@ -12,6 +13,8 @@ func TestSave(){
 	student.Address="中国"
 	student.No="123456"
 	student.ClassId=1
+	student.Create = time.Now()
+	student.IsReading =true
 	res:= db.Save(&student)
 	fmt.Println("改变行数",res)
 }
@@ -30,4 +33,8 @@ func TestUpdate(){
 	student.No="00000000"
 	res:= db.Update(&student,"name")
 	fmt.Println("改变行数",res)
+}
+
+func TestFindQuery()  {
+	db.FindQuery(model.Student{}, nil)
 }
