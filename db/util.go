@@ -134,7 +134,9 @@ func getDeleteSql(o interface{},sqlwhere ...string) (string, []interface{})  {
 
 	return fmt.Sprintf(sql,sqlSuffix[:len(sqlSuffix)]) ,value
 }
-
+/**
+数据类型转换
+ */
 func conver(value reflect.Value) interface{}  {
 	switch value.Kind() {
 	case reflect.String:
