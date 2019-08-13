@@ -19,7 +19,7 @@ func TestSave(){
 func TestDelete(){
 	var student model.Student
 	student.ClassId=1
-	res:= db.Delete(student,"class_id")
+	res:= db.Delete(&student,"class_id")
 	fmt.Println("改变行数",res)
 }
 
@@ -28,6 +28,6 @@ func TestUpdate(){
 	var student model.Student
 	student.Name="张三"
 	student.No="00000000"
-	res:= db.Update(student,"name")
+	res:= db.Update(&student,"name")
 	fmt.Println("改变行数",res)
 }

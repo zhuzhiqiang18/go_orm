@@ -23,14 +23,14 @@ type Student struct {
 	student.Address="中国"
 	student.No="123456"
 	student.ClassId=1
-	res:= db.Save(student)
+	res:= db.Save(&student)//支持指针和非指针
 	fmt.Println("改变行数",res)
 ```
 ## 删除
 ```go
     var student model.Student
 	student.ClassId=1
-	res:= db.Delete(student,"class_id")//删除条件 需要使用tag sql字段
+	res:= db.Delete(&student,"class_id")//删除条件 需要使用tag sql字段
 	fmt.Println("改变行数",res)
 ```
 ## 更改

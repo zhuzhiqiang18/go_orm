@@ -1,9 +1,7 @@
 package main
 
-import "go_web_curd/tests"
-
 func main() {
-	tests.TestSave()
+	//tests.TestSave()
 	//tests.TestDelete()
 	//tests.TestUpdate()
 }
