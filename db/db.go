@@ -1,7 +1,7 @@
 package db
 
 import (
-	"fmt"
+	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 	"go_web_curd/db/conn"
@@ -10,19 +10,19 @@ import (
 
 
 func Save(obj interface{}) int64  {
-	sql,para := insertSql(obj)
-	return exe(sql,para)
+	sqlStr,para := insertSql(obj)
+	return exe(sqlStr,para)
 }
 
 func Update(obj interface{},whereSql ...string) int64  {
-	sql,para := getUpdateSql(obj,whereSql...)
-	return exe(sql,para)
+	sqlStr,para := getUpdateSql(obj,whereSql...)
+	return exe(sqlStr,para)
 }
 
 
 func Delete(obj interface{},whereSql ...string) int64  {
-	sql,para := getDeleteSql(obj,whereSql...)
-	return exe(sql,para)
+	sqlStr,para := getDeleteSql(obj,whereSql...)
+	return exe(sqlStr,para)
 }
 
 func exe(sql string,para []interface{}) int64  {
@@ -52,9 +52,9 @@ func nativeSqlUpdate(nativeSql string,parameters []interface{}) int64  {
 
 
 func FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...string)  {
-	sql,para := find(o,findWhere,findFields...)
-	logrus.WithFields(logrus.Fields{}).Info(sql,para)
-	stmt, err := conn.GetDB().Prepare(sql)
+	sqlStr,para := find(o,findWhere,findFields...)
+	logrus.WithFields(logrus.Fields{}).Info(sqlStr,para)
+	stmt, err := conn.GetDB().Prepare(sqlStr)
 	if err != nil {
 		panic(err)
 	}
@@ -67,16 +67,22 @@ func FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...st
 	}
 	defer rows.Close()
 	for rows.Next()  {
-
 		dataTypes,err :=rows.ColumnTypes()
 		if err != nil{
 			panic(err)
 		}
+		values := make([]sql.RawBytes,len(dataTypes) )
 		scans := make([]interface{}, len(dataTypes))
-		rows.Scan(scans...)
-		fmt.Println(scans)
 
+		for i := range values {
+			scans[i] = &values[i]
+		}
+		err = rows.Scan(scans...)
+		if err!=nil{
+			logrus.WithFields(logrus.Fields{}).Error(err)
+		}
 	}
+
 
 }
 

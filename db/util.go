@@ -178,6 +178,7 @@ func find(o interface{}, findWhere map[string]interface{}, findFields ...string)
 			sql += f +"  ,"
 		}
 	}else {
+
 		sql += " * ,"
 	}
 	sql=sql[:len(sql)-1]
@@ -192,9 +193,6 @@ func find(o interface{}, findWhere map[string]interface{}, findFields ...string)
 			value=append(value,v)
 		}
 	}
-
-
-
 	return sql+where,value
 }
 
@@ -251,6 +249,26 @@ func getTag(o interface{},whereSql ...string) []string {
 	ob := reflect.TypeOf(o)
 	for _,field := range whereSql {
 
+		sField,find := ob.FieldByName(field)
+		if !find  {
+			panic(field+ "field is not ")
+		}
+		tag := sField.Tag.Get("sql")
+		if(len(tag)==0){
+			tag=sField.Name
+		}
+		tags=append(tags,tag)
+	}
+	return tags
+}
+
+/**
+获取tag feild map
+*/
+func getTagAndFeild(o interface{},whereSql ...string) []string {
+	tags := make([]string,0,10)
+	ob := reflect.TypeOf(o)
+	for _,field := range whereSql {
 		sField,find := ob.FieldByName(field)
 		if !find  {
 			panic(field+ "field is not ")
