@@ -77,7 +77,7 @@ func insertSql(o interface{}) (string, []interface{}) {
 func getUpdateSql(o interface{},sqlWhere ...string) (string, []interface{})  {
 	fieldMap := make(map[string]int)
 	wherePara := make([]interface{},0,5)
-
+   // tags := getTag(o,sqlWhere...)
 	value := make([]interface{},0,10)
 	para,tableName := getPram(o)
 	sql := "update "+tableName+" set %s  %s"
@@ -109,7 +109,7 @@ func getUpdateSql(o interface{},sqlWhere ...string) (string, []interface{})  {
 func getDeleteSql(o interface{},sqlwhere ...string) (string, []interface{})  {
 	fieldMap := make(map[string]int)
 	wherePara := make([]interface{},0,5)
-
+    //tags := getTag(o,sqlwhere...)
 	value := make([]interface{},0,10)
 	para,tableName := getPram(o)
 	sql := "delete from "+tableName+" %s "
@@ -152,4 +152,24 @@ func conver(value reflect.Value) interface{}  {
 	default:
 		panic("只支持基本类型")
 	}
+}
+/**
+获取tag
+ */
+func getTag(o interface{},whereSql ...string) []string {
+	tags := make([]string,0,10)
+	ob := reflect.TypeOf(o)
+	for _,field := range whereSql {
+
+		sField,find := ob.FieldByName(field)
+		if !find  {
+			panic(field+ "field is not ")
+		}
+		tag := sField.Tag.Get("sql")
+		if(len(tag)==0){
+			tag=sField.Name
+		}
+		tags=append(tags,tag)
+	}
+	return tags
 }

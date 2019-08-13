@@ -5,8 +5,8 @@ package model
  */
 type Student struct {
 	Id int `sql:"id"`
-	Name string
-	Address string
+	Name string `sql:"name"`
+	Address string `sql:"address"`
 	No string
 	ClassId int `sql:"class_id"`
 }

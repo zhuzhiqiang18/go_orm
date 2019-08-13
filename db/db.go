@@ -26,7 +26,7 @@ func Delete(obj interface{},whereSql ...string) int64  {
 
 func exe(sql string,para []interface{}) int64  {
 
-	logrus.WithFields(logrus.Fields{}).Debug(sql)
+	logrus.WithFields(logrus.Fields{}).Info(sql)
 	stmt, err := conn.GetDB().Prepare(sql)
 	if err != nil {
 		panic(err)
