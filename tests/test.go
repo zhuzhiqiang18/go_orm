@@ -63,9 +63,10 @@ func TestFindQueryField()  {
 	defer db.Close()
 	list := db.FindQuery(&model.Student{}, nil,"Name","No","Address")
 	for _,stu := range *list {
-		fmt.Println(stu.(model.Student).Name)
+		fmt.Println(stu.(model.Student))
+		/*fmt.Println(stu.(model.Student).Name)
 		fmt.Println(stu.(model.Student).No)
-		fmt.Println(stu.(model.Student).Address)
+		fmt.Println(stu.(model.Student).Address)*/
 	}
 
 }
