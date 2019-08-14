@@ -1,4 +1,4 @@
-module go_web_curd
+module github.com/zhuzhiqiang18/go_orm
 
 go 1.12
 
