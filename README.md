@@ -62,11 +62,14 @@ list := persistent.FindQuery(&model.Student{}, nil,"Name","No","Address")//传�
 ###条件查询
 >条件查询使用tag sql字段 
 
+
+```go
 list := persistent.FindQuery(&model.Student{}, map[string]interface{}{"name": "张三"},"Name","No","Address")
 	for _,stu := range *list {
 		fmt.Println(stu.(model.Student).Name)
 		fmt.Println(stu.(model.Student).No)
 		fmt.Println(stu.(model.Student).Address)
 	}
+```
 ### 联合查询
 待更新……
