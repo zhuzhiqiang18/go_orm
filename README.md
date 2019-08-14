@@ -36,31 +36,39 @@ type Student struct {
 ```
 ## 删除
 ```go
-    var student model.Student
-	student.ClassId=1
-	res:= db.Delete(&student,"class_id")//删除条件 需要使用tag sql字段
-	fmt.Println("改变行数",res)
+  db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+  	defer db.Close()
+  	var student model.Student
+  	student.ClassId=1
+  	res:= db.Delete(&student,"class_id")
+  	fmt.Println("改变行数",res)
 ```
 ## 更改
 ```go
-var student model.Student
+db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	var student model.Student
 	student.Name="张三"
 	student.No="00000000"
-	res:= db.Update(student,"name")//更改条件 需要使用tag sql字段
+	res:= db.Update(&student,"name")
 	fmt.Println("改变行数",res)
 ```
 ## 查询
 ### 单表全查询
 ```go
-//传类型地址
-	list := persistent.FindQuery(&model.Student{}, nil)
+db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	//传类型地址
+	list := db.FindQuery(&model.Student{}, nil)
 	for _,stu := range *list {
 		fmt.Println(stu.(model.Student))
 	}
 ```
 ### 单表指定字段查询
 ```go
-list := persistent.FindQuery(&model.Student{}, nil,"Name","No","Address")//传入结构体字段
+db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	list := db.FindQuery(&model.Student{}, nil,"Name","No","Address")
 	for _,stu := range *list {
 		fmt.Println(stu.(model.Student).Name)
 		fmt.Println(stu.(model.Student).No)
@@ -72,7 +80,9 @@ list := persistent.FindQuery(&model.Student{}, nil,"Name","No","Address")//传�
 
 
 ```go
-list := persistent.FindQuery(&model.Student{}, map[string]interface{}{"name": "张三"},"Name","No","Address")
+db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	list := db.FindQuery(&model.Student{}, map[string]interface{}{"name": "张三"},"Name","No","Address")
 	for _,stu := range *list {
 		fmt.Println(stu.(model.Student).Name)
 		fmt.Println(stu.(model.Student).No)
