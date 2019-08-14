@@ -42,7 +42,7 @@ var student model.Student
 	fmt.Println("改变行数",res)
 ```
 ## 查询
-###单表全查询
+### 单表全查询
 ```go
 //传类型地址
 	list := persistent.FindQuery(&model.Student{}, nil)
@@ -50,7 +50,7 @@ var student model.Student
 		fmt.Println(stu.(model.Student))
 	}
 ```
-###单表指定字段查询
+### 单表指定字段查询
 ```go
 list := persistent.FindQuery(&model.Student{}, nil,"Name","No","Address")//传入结构体字段
 	for _,stu := range *list {
@@ -59,7 +59,7 @@ list := persistent.FindQuery(&model.Student{}, nil,"Name","No","Address")//传�
 		fmt.Println(stu.(model.Student).Address)
 	}
 ```
-###条件查询
+### 条件查询
 >条件查询使用tag sql字段 
 
 
