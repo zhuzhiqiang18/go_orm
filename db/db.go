@@ -51,14 +51,24 @@ func nativeSqlUpdate(nativeSql string,parameters []interface{}) int64  {
 	return exe(nativeSql,parameters)
 }
 
+func getPrt(o interface{}) interface{} {
+	oType := reflect.TypeOf(o)
+	if oType.Kind() != reflect.Ptr{
+		return &o
+	}else {
+		return o
+	}
+}
 
-
-func FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...string)  {
+func FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...string) *[]interface{} {
+	list := make([]interface{},0)
 	oType := reflect.TypeOf(o)
 	oValue := reflect.ValueOf(o)
-	if(oType.Kind() == reflect.Ptr){
+	if oType.Kind() == reflect.Ptr{
 		oType = oType.Elem()
 		oValue = oValue.Elem()
+	}else{
+		panic("请传递指针类型")
 	}
 	sqlStr, para, fields := find(oType,findWhere,findFields...)
 
@@ -95,22 +105,32 @@ func FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...st
 		}
 
 		converResult := mappingConver(dataTypes,scans)
-		resultMapping(oValue,converResult,fields)
+		bean := resultMapping(oValue,converResult,fields)
+		list = append(list,bean)
 	}
+	return &list
 
 
 }
 /**
 封装返回值
  */
-func resultMapping(v reflect.Value,result *[]interface{},fields []string)  {
-
-
+func resultMapping(v reflect.Value, result *[]interface{}, fields []string) interface{} {
 	//fmt.Println(*result)
 	for i:=0;i< len(fields);i++  {
-		fmt.Println((*result)[i])
-		//v.FieldByName(fields[i]).Set(result[i])
+
+		if v.FieldByName(fields[i]).Type().Kind()==reflect.Bool {
+			if (*result)[i] == int64(1){
+				v.FieldByName(fields[i]).Set(reflect.ValueOf(true))
+			}else {
+				v.FieldByName(fields[i]).Set(reflect.ValueOf(false))
+			}
+		}else{
+			v.FieldByName(fields[i]).Set(reflect.ValueOf((*result)[i]))
+		}
+
 	}
+	return v.Interface()
 }
 
 

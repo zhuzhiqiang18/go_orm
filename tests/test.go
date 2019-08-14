@@ -36,5 +36,8 @@ func TestUpdate(){
 }
 
 func TestFindQuery()  {
-	db.FindQuery(model.Student{}, nil)
+	list := db.FindQuery(&model.Student{}, nil,"name" )
+	for _,stu := range *list {
+		fmt.Println(stu.(model.Student).IsReading)
+	}
 }

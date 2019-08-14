@@ -6,11 +6,11 @@ import "time"
 学生
  */
 type Student struct {
-	Id int `sql:"id"`
+	Id int64 `sql:"id"`
 	Name string `sql:"name"`
 	Address string `sql:"address"`
 	No string
-	ClassId int `sql:"class_id"`
+	ClassId int64 `sql:"class_id"`
 	Create time.Time `sql:"create_date"`
 	IsReading bool `sql:"is_reading"`
 	High float64

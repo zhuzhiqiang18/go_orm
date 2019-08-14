@@ -163,20 +163,15 @@ func getDeleteSql(o interface{},sqlwhere ...string) (string, []interface{})  {
  */
 func find(oType reflect.Type, findWhere map[string]interface{}, findFields ...string) (string, []interface{}, []string) {
 	//felid := make([]string,0)
-
 	value := make([]interface{},0,10)
-
 
 	//获取 tags fields
 	tags,fields := getTagAndFeild(oType)
 	//结构体
-
 	switch oType.Kind() {
-
 	case reflect.Struct:
 		//oType = reflect.Type(o).Kind()
 	case reflect.Map:
-
 	}
 
 	sql:= "select "
@@ -267,27 +262,31 @@ func mappingConver(columnTypes []*sql.ColumnType, results []interface{}) *[]inte
 	converResult := make([]interface{},0)
 
 	for i := 0;i< len(columnTypes);i++ {
-
 		re := string(*reflect.ValueOf(results[i]).Interface().(*sql.RawBytes))
-		fmt.Println(re,len(re))
 		switch columnTypes[i].DatabaseTypeName(){
-		case "VARCHAR","CHAR","TEXT"://字符串
-			converResult= append(converResult,re)
-		case "TIMESTAMP"://日期
-			date,err :=time.Parse("2006-01-02 15:04:05",re)
-			if err!=nil{
-				panic(err)
+			case "VARCHAR","CHAR","TEXT"://字符串
+				converResult= append(converResult,re)
+			case "TIMESTAMP"://日期
+				if len(re)==0 {
+					converResult= append(converResult,time.Time{})
+				}else{
+					date,err :=time.Parse("2006-01-02 15:04:05",re)
+					if err!=nil{
+						panic(err)
+					}
+					converResult= append(converResult,date)
+				}
+			case "FLOAT","DOUBLE","DECIMAL"://浮点
+				reFloat,_ := strconv.ParseFloat(re,64)
+				converResult= append(converResult,reFloat)
+			case "INT","LONG"://整数
+				reInt,_ := strconv.ParseInt(re,10,64)
+				converResult= append(converResult,reInt)
 			}
-			converResult= append(converResult,date)
-		case "FLOAT","DOUBLE","DECIMAL"://浮点
-		    reFloat,_ := strconv.ParseFloat(re,64)
-			converResult= append(converResult,reFloat)
-		case "INT","LONG"://整数
-			reInt,_ := strconv.ParseInt(re,10,64)
-			converResult= append(converResult,reInt)
+
 		}
 
-	}
+
 	return &converResult
 }
 
