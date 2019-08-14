@@ -1,11 +1,10 @@
-package db
+package persistent
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
-	"go_web_curd/db/conn"
+	"go_web_curd/persistent/conn"
 	"reflect"
 )
 
@@ -70,9 +69,8 @@ func FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...st
 	}else{
 		panic("请传递指针类型")
 	}
+	//拼接sql
 	sqlStr, para, fields := find(oType,findWhere,findFields...)
-
-	fmt.Println(fields)
 
 	logrus.WithFields(logrus.Fields{}).Info(sqlStr,para)
 	stmt, err := conn.GetDB().Prepare(sqlStr)
@@ -116,9 +114,7 @@ func FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...st
 封装返回值
  */
 func resultMapping(v reflect.Value, result *[]interface{}, fields []string) interface{} {
-	//fmt.Println(*result)
 	for i:=0;i< len(fields);i++  {
-
 		if v.FieldByName(fields[i]).Type().Kind()==reflect.Bool {
 			if (*result)[i] == int64(1){
 				v.FieldByName(fields[i]).Set(reflect.ValueOf(true))

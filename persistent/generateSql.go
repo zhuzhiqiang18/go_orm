@@ -1,4 +1,4 @@
-package db
+package persistent
 
 import (
 	"database/sql"
@@ -165,8 +165,16 @@ func find(oType reflect.Type, findWhere map[string]interface{}, findFields ...st
 	//felid := make([]string,0)
 	value := make([]interface{},0,10)
 
-	//获取 tags fields
-	tags,fields := getTagAndFeild(oType)
+	var tags  []string
+	var fields []string
+
+	//获取 指定 tags fields
+	if len(findFields)>0 {
+		tags,fields = getTagByFeild(oType,findFields)
+	}else{
+		tags,fields = getTagAndFeild(oType)
+	}
+
 	//结构体
 	switch oType.Kind() {
 	case reflect.Struct:
@@ -175,19 +183,14 @@ func find(oType reflect.Type, findWhere map[string]interface{}, findFields ...st
 	}
 
 	sql:= "select "
-	if len(findFields)>0 {
-		for _,f := range findFields {
-			sql += f +"  ,"
-		}
-	}else {
-		for i,tag := range tags  {
-			if tag=="NULL"{
-				sql +=" "+fields[i]+","
-			}else {
-				sql +=" "+tag+","
-			}
+	for i,tag := range tags  {
+		if tag=="NULL"{
+			sql +=" "+fields[i]+","
+		}else {
+			sql +=" "+tag+","
 		}
 	}
+
 	sql=sql[:len(sql)-1]
 
 	//todo  关联关系
@@ -321,6 +324,25 @@ func getTagAndFeild(t reflect.Type) ([]string,[]string) {
 	for i:=0;i<t.NumField(); i++  {
 		sField := ob.Field(i)
 
+		tag := sField.Tag.Get("sql")
+		if len(tag)==0 {
+			tag="NULL"
+		}
+		tags=append(tags,tag)
+		fields=append(fields,sField.Name)
+	}
+	return tags,fields
+}
+
+func getTagByFeild(t reflect.Type, findFeilds []string) ([]string,[]string) {
+	tags := make([]string,0)
+	fields := make([]string,0)
+	ob := t
+	for i:=0;i< len(findFeilds); i++  {
+		sField, err := ob.FieldByName(findFeilds[i])
+		if !err  {
+			panic("请确认查询的结构体字段存在")
+		}
 		tag := sField.Tag.Get("sql")
 		if len(tag)==0 {
 			tag="NULL"
