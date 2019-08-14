@@ -13,4 +13,6 @@ type Student struct {
 	ClassId int `sql:"class_id"`
 	Create time.Time `sql:"create_date"`
 	IsReading bool `sql:"is_reading"`
+	High float64
+	Weight float64
 }

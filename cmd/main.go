@@ -1,10 +1,16 @@
 package main
 
-import "go_web_curd/tests"
+import (
+	"fmt"
+)
 
 func main() {
 	//tests.TestSave()
 	//tests.TestDelete()
 	//tests.TestUpdate()
-	tests.TestFindQuery()
+	//tests.TestFindQuery()
+	var a int64
+
+	fmt.Println(a)
+
 }

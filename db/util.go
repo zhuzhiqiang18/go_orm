@@ -1,8 +1,10 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"reflect"
+	"strconv"
 	"time"
 )
 
@@ -156,12 +158,14 @@ func getDeleteSql(o interface{},sqlwhere ...string) (string, []interface{})  {
 /**
 拼接查询
  */
-func find(o interface{}, findWhere map[string]interface{}, findFields ...string) (string, []interface{}) {
+func find(oType reflect.Type, findWhere map[string]interface{}, findFields ...string) (string, []interface{}, []string) {
+	//felid := make([]string,0)
+
 	value := make([]interface{},0,10)
-	oType := reflect.TypeOf(o)
-	if(oType.Kind() == reflect.Ptr){
-		oType = oType.Elem()
-	}
+
+
+	//获取 tags fields
+	tags,fields := getTagAndFeild(oType)
 	//结构体
 
 	switch oType.Kind() {
@@ -178,8 +182,13 @@ func find(o interface{}, findWhere map[string]interface{}, findFields ...string)
 			sql += f +"  ,"
 		}
 	}else {
-
-		sql += " * ,"
+		for i,tag := range tags  {
+			if tag=="NULL"{
+				sql +=" "+fields[i]+","
+			}else {
+				sql +=" "+tag+","
+			}
+		}
 	}
 	sql=sql[:len(sql)-1]
 
@@ -193,7 +202,14 @@ func find(o interface{}, findWhere map[string]interface{}, findFields ...string)
 			value=append(value,v)
 		}
 	}
-	return sql+where,value
+
+
+	returnFields:=findFields
+	if len(findFields)==0{
+		returnFields=fields
+	}
+
+	return sql+where,value,returnFields
 }
 
 type PageInfo struct {
@@ -241,6 +257,37 @@ func conver(value reflect.Value,fType reflect.StructField) interface{}  {
 		return nil
 	}
 }
+
+
+func mappingConver(columnTypes []*sql.ColumnType, results []interface{}) *[]interface{} {
+
+	converResult := make([]interface{},0)
+
+	for i := 0;i< len(columnTypes);i++ {
+
+		re := string(*reflect.ValueOf(results[i]).Interface().(*sql.RawBytes))
+		fmt.Println(re,len(re))
+		switch columnTypes[i].DatabaseTypeName(){
+		case "VARCHAR","CHAR","TEXT"://字符串
+			converResult= append(converResult,re)
+		case "TIMESTAMP"://日期
+			date,err :=time.Parse("2006-01-02 15:04:05",re)
+			if err!=nil{
+				panic(err)
+			}
+			converResult= append(converResult,date)
+		case "FLOAT","DOUBLE","DECIMAL"://浮点
+		    reFloat,_ := strconv.ParseFloat(re,64)
+			converResult= append(converResult,reFloat)
+		case "INT","LONG"://整数
+			reInt,_ := strconv.ParseInt(re,10,64)
+			converResult= append(converResult,reInt)
+		}
+
+	}
+	return &converResult
+}
+
 /**
 获取tag
  */
@@ -263,21 +310,21 @@ func getTag(o interface{},whereSql ...string) []string {
 }
 
 /**
-获取tag feild map
+获取tag feild
 */
-func getTagAndFeild(o interface{},whereSql ...string) []string {
-	tags := make([]string,0,10)
-	ob := reflect.TypeOf(o)
-	for _,field := range whereSql {
-		sField,find := ob.FieldByName(field)
-		if !find  {
-			panic(field+ "field is not ")
-		}
+func getTagAndFeild(t reflect.Type) ([]string,[]string) {
+	tags := make([]string,0)
+	fields := make([]string,0)
+	ob := t
+	for i:=0;i<t.NumField(); i++  {
+		sField := ob.Field(i)
+
 		tag := sField.Tag.Get("sql")
-		if(len(tag)==0){
-			tag=sField.Name
+		if len(tag)==0 {
+			tag="NULL"
 		}
 		tags=append(tags,tag)
+		fields=append(fields,sField.Name)
 	}
-	return tags
+	return tags,fields
 }

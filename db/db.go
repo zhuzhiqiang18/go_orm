@@ -2,9 +2,11 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 	"go_web_curd/db/conn"
+	"reflect"
 )
 
 
@@ -52,7 +54,16 @@ func nativeSqlUpdate(nativeSql string,parameters []interface{}) int64  {
 
 
 func FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...string)  {
-	sqlStr,para := find(o,findWhere,findFields...)
+	oType := reflect.TypeOf(o)
+	oValue := reflect.ValueOf(o)
+	if(oType.Kind() == reflect.Ptr){
+		oType = oType.Elem()
+		oValue = oValue.Elem()
+	}
+	sqlStr, para, fields := find(oType,findWhere,findFields...)
+
+	fmt.Println(fields)
+
 	logrus.WithFields(logrus.Fields{}).Info(sqlStr,para)
 	stmt, err := conn.GetDB().Prepare(sqlStr)
 	if err != nil {
@@ -79,11 +90,27 @@ func FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...st
 		}
 		err = rows.Scan(scans...)
 		if err!=nil{
-			logrus.WithFields(logrus.Fields{}).Error(err)
+			//logrus.WithFields(logrus.Fields{}).Error(err)
+			panic(err)
 		}
+
+		converResult := mappingConver(dataTypes,scans)
+		resultMapping(oValue,converResult,fields)
 	}
 
 
+}
+/**
+封装返回值
+ */
+func resultMapping(v reflect.Value,result *[]interface{},fields []string)  {
+
+
+	//fmt.Println(*result)
+	for i:=0;i< len(fields);i++  {
+		fmt.Println((*result)[i])
+		//v.FieldByName(fields[i]).Set(result[i])
+	}
 }
 
 
