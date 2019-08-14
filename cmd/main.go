@@ -5,14 +5,14 @@ import (
 )
 
 func main() {
-	//tests.TestSave()
+	tests.TestSave()
 	//tests.TestDelete()
 	//tests.TestUpdate()
 	//tests.TestFindQuery()
 	//tests.TestFindQueryField()
 	//fmt.Println(conn.GetDbSourceConfig())
 
-	tests.TestFindQueryWhere()
+	//tests.TestFindQueryWhere()
 
 
 }

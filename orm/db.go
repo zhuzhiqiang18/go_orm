@@ -1,34 +1,52 @@
-package persistent
+package orm
 
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
-	"go_web_curd/persistent/conn"
+	"go_web_curd/orm/conn"
 	"reflect"
 )
 
+//var connDb sql.DB
+
+type Db struct {
+	connDb *sql.DB
+}
+
+func getDb(connDb *sql.DB) *Db {
+	return &Db{connDb:connDb}
+}
+
+func  Open(User string, Password string, Host string, Port int64, Table string) (*Db, error) {
+	db,err := conn.Open(User,Password,Host,Port,Table)
+	return getDb(db),err
+}
 
 
-func Save(obj interface{}) int64  {
+func  (db Db) Close() error {
+	return db.connDb.Close()
+}
+
+func (db Db) Save(obj interface{}) int64  {
 	sqlStr,para := insertSql(obj)
-	return exe(sqlStr,para)
+	return db.exe(sqlStr,para)
 }
 
-func Update(obj interface{},whereSql ...string) int64  {
+func (db Db) Update(obj interface{},whereSql ...string) int64  {
 	sqlStr,para := getUpdateSql(obj,whereSql...)
-	return exe(sqlStr,para)
+	return db.exe(sqlStr,para)
 }
 
 
-func Delete(obj interface{},whereSql ...string) int64  {
+func (db Db) Delete(obj interface{},whereSql ...string) int64  {
 	sqlStr,para := getDeleteSql(obj,whereSql...)
-	return exe(sqlStr,para)
+	return db.exe(sqlStr,para)
 }
 
-func exe(sql string,para []interface{}) int64  {
+func (db Db) exe(sql string,para []interface{}) int64  {
 	logrus.WithFields(logrus.Fields{}).Info(sql,para)
-	stmt, err := conn.GetDB().Prepare(sql)
+	stmt, err := db.connDb.Prepare(sql)
 	if err != nil {
 		panic(err)
 	}
@@ -46,20 +64,13 @@ func exe(sql string,para []interface{}) int64  {
 /**
 直接slq执行
  */
-func nativeSqlUpdate(nativeSql string,parameters []interface{}) int64  {
-	return exe(nativeSql,parameters)
+func (db Db) nativeSqlUpdate(nativeSql string,parameters []interface{}) int64  {
+	return db.exe(nativeSql,parameters)
 }
 
-func getPrt(o interface{}) interface{} {
-	oType := reflect.TypeOf(o)
-	if oType.Kind() != reflect.Ptr{
-		return &o
-	}else {
-		return o
-	}
-}
 
-func FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...string) *[]interface{} {
+
+func (db Db) FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...string) *[]interface{} {
 	list := make([]interface{},0)
 	oType := reflect.TypeOf(o)
 	oValue := reflect.ValueOf(o)
@@ -73,7 +84,7 @@ func FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...st
 	sqlStr, para, fields := find(oType,findWhere,findFields...)
 
 	logrus.WithFields(logrus.Fields{}).Info(sqlStr,para)
-	stmt, err := conn.GetDB().Prepare(sqlStr)
+	stmt, err := db.connDb.Prepare(sqlStr)
 	if err != nil {
 		panic(err)
 	}

@@ -1,4 +1,4 @@
-package persistent
+package orm
 
 
 var User string

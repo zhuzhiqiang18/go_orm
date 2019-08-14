@@ -18,13 +18,21 @@ type Student struct {
 # CURD使用方法
 ## 插入
 ```go
-    var student model.Student
-	student.Name="张三"
-	student.Address="中国"
-	student.No="123456"
-	student.ClassId=1
-	res:= db.Save(&student)//支持指针和非指针
-	fmt.Println("改变行数",res)
+   db, err := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+   	defer db.Close()
+   	if err!=nil {
+   		fmt.Println(err)
+   		return
+   	}
+   	var student model.Student
+   	student.Name="张三"
+   	student.Address="中国"
+   	student.No="123456"
+   	student.ClassId=1
+   	student.Create = time.Now()
+   	student.IsReading =true
+   	res:= db.Save(&student)
+   	fmt.Println("改变行数",res)
 ```
 ## 删除
 ```go

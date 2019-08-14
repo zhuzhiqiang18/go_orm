@@ -1,4 +1,4 @@
-package persistent
+package orm
 
 import (
 	"database/sql"

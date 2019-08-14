@@ -3,12 +3,11 @@ package conn
 import (
 	"database/sql"
 	"fmt"
-	"github.com/sirupsen/logrus"
 )
 
 var db *sql.DB
 var dbConifg DbSourceConfig
-func init() {
+/*func init() {
 	dbConifg.dbSourceConfig("root","123456","127.0.0.1",3306,"go_test")
 	var err error
 	db,err = sql.Open("mysql",dbConifg.GetDns())
@@ -31,7 +30,23 @@ func init() {
 	logrus.SetLevel(logrus.InfoLevel)
 	log.WithFields(logrus.Fields{}).Info("DB COON ……")
 
+}*/
+
+func  Open(User string, Password string, Host string, Port int64, Table string) (*sql.DB, error) {
+	dbConifg.dbSourceConfig(User,Password,Host,Port,Table)
+	var err error
+	db,err = sql.Open("mysql",dbConifg.GetDns())
+
+	err = db.Ping()
+
+	//设置最大连接数 0不限制
+	db.SetMaxOpenConns(0)
+	//设置最大闲置连接数
+	db.SetMaxIdleConns(10)
+
+	return db,err
 }
+
 func GetDB() *sql.DB {
 	return db
 }
