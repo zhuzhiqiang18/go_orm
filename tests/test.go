@@ -79,5 +79,14 @@ func TestFindQueryWhere()  {
 		fmt.Println(stu.(model.Student).No)
 		fmt.Println(stu.(model.Student).Address)
 	}
+}
+
+
+
+func TestNativeSql() {
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	re := db.NativeSql("delete  from student")
+	fmt.Println("改变条数",re)
 
 }

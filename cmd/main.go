@@ -5,12 +5,13 @@ import (
 )
 
 func main() {
-	tests.TestSave()
+	//tests.TestSave()
 	//tests.TestDelete()
 	//tests.TestUpdate()
 	//tests.TestFindQuery()
 	//tests.TestFindQueryField()
 	//tests.TestFindQueryWhere()
+	tests.TestNativeSql()
 
 
 }

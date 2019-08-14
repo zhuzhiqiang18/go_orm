@@ -45,7 +45,7 @@ func (db Db) Delete(obj interface{},whereSql ...string) int64  {
 	return db.exe(sqlStr,para)
 }
 
-func (db Db) exe(sql string,para []interface{}) int64  {
+func (db Db) exe(sql string,para ...interface{}) int64  {
 	logrus.WithFields(logrus.Fields{}).Info(sql,para)
 	stmt, err := db.connDb.Prepare(sql)
 	if err != nil {
@@ -65,8 +65,8 @@ func (db Db) exe(sql string,para []interface{}) int64  {
 /**
 直接slq执行
  */
-func (db Db) nativeSqlUpdate(nativeSql string,parameters []interface{}) int64  {
-	return db.exe(nativeSql,parameters)
+func (db Db) NativeSql(nativeSql string,parameters ...interface{}) int64  {
+	return db.exe(nativeSql,parameters...)
 }
 
 
