@@ -5,7 +5,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 	"github.com/zhuzhiqiang18/go_orm/conn"
-
 	"reflect"
 )
 
