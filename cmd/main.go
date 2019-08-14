@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go_web_curd/tests"
+	"github.com/zhuzhiqiang18/go_orm/tests"
 )
 
 func main() {

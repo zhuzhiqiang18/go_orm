@@ -2,15 +2,16 @@ package tests
 
 import (
 	"fmt"
-	"go_web_curd/model"
-	"go_web_curd/orm"
+	"github.com/zhuzhiqiang18/go_orm"
+	"github.com/zhuzhiqiang18/go_orm/model"
+
 	"time"
 )
 
-var db orm.Db
+
 
 func TestSave(){
-	db, err := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	db, err := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	if err!=nil {
 		fmt.Println(err)
@@ -28,7 +29,7 @@ func TestSave(){
 }
 
 func TestDelete(){
-	db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	var student model.Student
 	student.ClassId=1
@@ -38,7 +39,7 @@ func TestDelete(){
 
 
 func TestUpdate(){
-	db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	var student model.Student
 	student.Name="张三"
@@ -48,7 +49,7 @@ func TestUpdate(){
 }
 
 func TestFindQuery()  {
-	db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	//传类型地址
 	list := db.FindQuery(&model.Student{}, nil)
@@ -58,7 +59,7 @@ func TestFindQuery()  {
 }
 
 func TestFindQueryField()  {
-	db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	list := db.FindQuery(&model.Student{}, nil,"Name","No","Address")
 	for _,stu := range *list {
@@ -70,7 +71,7 @@ func TestFindQueryField()  {
 }
 
 func TestFindQueryWhere()  {
-	db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	list := db.FindQuery(&model.Student{}, map[string]interface{}{"name": "张三"},"Name","No","Address")
 	for _,stu := range *list {

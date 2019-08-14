@@ -1,10 +1,11 @@
-package orm
+package go_orm
 
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
-	"go_web_curd/orm/conn"
+	"github.com/zhuzhiqiang18/go_orm/conn"
+
 	"reflect"
 )
 
