@@ -10,8 +10,6 @@ func main() {
 	//tests.TestUpdate()
 	//tests.TestFindQuery()
 	//tests.TestFindQueryField()
-	//fmt.Println(conn.GetDbSourceConfig())
-
 	//tests.TestFindQueryWhere()
 
 
