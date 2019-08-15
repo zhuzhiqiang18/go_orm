@@ -10,8 +10,6 @@ import (
 	"strings"
 )
 
-//var connDb sql.DB
-
 type interfaceDb interface {
      Prepare(query string) (*sql.Stmt, error)
 }
@@ -59,7 +57,6 @@ func (db Db) Update(obj interface{}, whereSql ...string) int64 {
 
 func (db Db) Delete(obj interface{}, whereSql ...string) int64 {
 	sqlStr,para := getDeleteSql(obj,whereSql...)
-
 	affected,_:= db.exe(sqlStr,para)
 	return affected
 }
@@ -105,7 +102,55 @@ func (db Db) NativeSql(nativeSql string, parameters ...interface{}) int64 {
 	return affected
 }
 
+func (db Db) FindGql(gql *Gql){
+	list := make([]interface{},0)
+	o := gql.GetBind()
+	oType := reflect.TypeOf(o)
+	oValue := reflect.ValueOf(o)
+	if oType.Kind() == reflect.Ptr{
+		oType = oType.Elem()
+		oValue = oValue.Elem()
+	}else{
+		panic("请传递指针类型")
+	}
+	logger.Debug(gql.GetGql(),gql.GetPara())
 
+	stmt, err := db.abstractDb.Prepare(gql.GetGql())
+	if err != nil {
+		panic(err)
+	}
+	defer stmt.Close()
+
+	para := gql.GetPara()
+	rows,err := stmt.Query(*(para)...)
+	if err !=nil {
+		logrus.WithFields(logrus.Fields{}).Error(err)
+		panic(err)
+	}
+
+	defer rows.Close()
+	for rows.Next()  {
+		dataTypes,err :=rows.ColumnTypes()
+		if err != nil{
+			panic(err)
+		}
+		values := make([]sql.RawBytes,len(dataTypes) )
+		scans := make([]interface{}, len(dataTypes))
+
+		for i := range values {
+			scans[i] = &values[i]
+		}
+		err = rows.Scan(scans...)
+		if err!=nil{
+			panic(err)
+		}
+
+		converResult := mappingConver(dataTypes,scans)
+		bean := resultMapping(oValue,converResult,gql.fields)
+		list = append(list,bean)
+	}
+
+}
 
 func (db Db) FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...string) *[]interface{} {
 	list := make([]interface{},0)
@@ -133,6 +178,7 @@ func (db Db) FindQuery(o interface{}, findWhere map[string]interface{}, findFiel
 		logrus.WithFields(logrus.Fields{}).Error(err)
 		panic(err)
 	}
+
 	defer rows.Close()
 	for rows.Next()  {
 		dataTypes,err :=rows.ColumnTypes()
@@ -147,7 +193,6 @@ func (db Db) FindQuery(o interface{}, findWhere map[string]interface{}, findFiel
 		}
 		err = rows.Scan(scans...)
 		if err!=nil{
-			//logrus.WithFields(logrus.Fields{}).Error(err)
 			panic(err)
 		}
 
@@ -157,26 +202,16 @@ func (db Db) FindQuery(o interface{}, findWhere map[string]interface{}, findFiel
 	}
 	return &list
 
+}
+
+
+
+func RowsMapping(rows sql.Row,oValue reflect.Value,fields []string,list []interface{})  {
 
 }
-/**
-封装返回值
- */
-func resultMapping(v reflect.Value, result *[]interface{}, fields []string) interface{} {
-	for i:=0;i< len(fields);i++  {
-		if v.FieldByName(fields[i]).Type().Kind()==reflect.Bool {
-			if (*result)[i] == int64(1){
-				v.FieldByName(fields[i]).Set(reflect.ValueOf(true))
-			}else {
-				v.FieldByName(fields[i]).Set(reflect.ValueOf(false))
-			}
-		}else{
-			v.FieldByName(fields[i]).Set(reflect.ValueOf((*result)[i]))
-		}
 
-	}
-	return v.Interface()
-}
+
+
 
 func (db *Db)Begin() *Db {
 	var newDb = Db{}
