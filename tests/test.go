@@ -148,12 +148,13 @@ func TestTx()  {
 	defer func() {
 		err:=recover()
 		if err !=nil {
-			tx.Rollback()
+			tx.Rollback()//事务回滚
+			return
 		}
 	}()
 
 	panic("事务回滚")
 
-	tx.Commit()
+	tx.Commit()//事务提交
 
 }
