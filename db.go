@@ -5,7 +5,9 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 	"github.com/zhuzhiqiang18/go_orm/conn"
+	"github.com/zhuzhiqiang18/go_orm/log"
 	"reflect"
+	"strings"
 )
 
 //var connDb sql.DB
@@ -28,44 +30,54 @@ func  (db Db) Close() error {
 	return db.connDb.Close()
 }
 
-func (db Db) Save(obj interface{}) int64  {
+func (db Db) Save(obj interface{}) (int64, int64, error) {
+
 	sqlStr,para := insertSql(obj)
 	return db.exe(sqlStr,para)
 }
 
-func (db Db) Update(obj interface{},whereSql ...string) int64  {
+func (db Db) Update(obj interface{}, whereSql ...string) (int64, error) {
 	sqlStr,para := getUpdateSql(obj,whereSql...)
-	return db.exe(sqlStr,para)
+
+	affected,_,err:= db.exe(sqlStr,para)
+	return affected,err
 }
 
 
-func (db Db) Delete(obj interface{},whereSql ...string) int64  {
+func (db Db) Delete(obj interface{}, whereSql ...string) (int64, error) {
 	sqlStr,para := getDeleteSql(obj,whereSql...)
-	return db.exe(sqlStr,para)
+
+	affected,_,err:= db.exe(sqlStr,para)
+	return affected,err
 }
 
-func (db Db) exe(sql string,para []interface{}) int64  {
-	logrus.WithFields(logrus.Fields{}).Info(sql,para)
-	stmt, err := db.connDb.Prepare(sql)
-	if err != nil {
-		panic(err)
-	}
-	defer stmt.Close()
 
-	result,err := stmt.Exec(para...)
-	if err !=nil {
-		logrus.WithFields(logrus.Fields{}).Error(err)
-		panic(err)
+
+func (db Db) exe(sqlStr string, para []interface{}) (int64, int64, error) {
+	log.Debug(sqlStr,para)
+	stmt, err := db.connDb.Prepare(sqlStr)
+	var result sql.Result
+	defer stmt.Close()
+	result,err = stmt.Exec(para...)
+	//改变行数
+	var affected int64
+	//最后插入的ID
+	lastInsertId :=int64(0)
+	affected,err = result.RowsAffected()
+
+	if strings.HasPrefix(sqlStr,"insert") {
+		lastInsertId,err =result.LastInsertId()
 	}
-	re,_ := result.RowsAffected()
-	return re
+
+	return affected,lastInsertId,err
 }
 
 /**
 直接slq执行
  */
-func (db Db) NativeSql(nativeSql string,parameters ...interface{}) int64  {
-	return db.exe(nativeSql,parameters)
+func (db Db) NativeSql(nativeSql string, parameters ...interface{}) (int64, error) {
+	affected,_,err:= db.exe(nativeSql,parameters)
+	return affected,err
 }
 
 
@@ -83,7 +95,7 @@ func (db Db) FindQuery(o interface{}, findWhere map[string]interface{}, findFiel
 	//拼接sql
 	sqlStr, para, fields := find(oType,findWhere,findFields...)
 
-	logrus.WithFields(logrus.Fields{}).Info(sqlStr,para)
+	log.Debug(sqlStr,para)
 	stmt, err := db.connDb.Prepare(sqlStr)
 	if err != nil {
 		panic(err)

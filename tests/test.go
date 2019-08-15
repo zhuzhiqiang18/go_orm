@@ -12,7 +12,7 @@ import (
 
 func TestSave(){
 	db, err := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
-	db.Close()
+	defer db.Close()
 	if err!=nil {
 		fmt.Println(err)
 		return
@@ -24,8 +24,14 @@ func TestSave(){
 	student.ClassId=1
 	student.Create = time.Now()
 	student.IsReading =true
-	res:= db.Save(&student)
+	res, lastInsertId, err := db.Save(&student)
+	if err !=nil {
+		fmt.Println("err")
+		return
+	}
 	fmt.Println("改变行数",res)
+	fmt.Println("最后插入的id",lastInsertId)
+
 }
 
 func TestDelete(){
@@ -33,7 +39,7 @@ func TestDelete(){
 	defer db.Close()
 	var student model.Student
 	student.ClassId=1
-	res:= db.Delete(&student,"class_id")
+	res, _ := db.Delete(&student,"class_id")
 	fmt.Println("改变行数",res)
 }
 
@@ -44,7 +50,7 @@ func TestUpdate(){
 	var student model.Student
 	student.Name="张三"
 	student.No="00000000"
-	res:= db.Update(&student,"name")
+	res, _ := db.Update(&student,"name")
 	fmt.Println("改变行数",res)
 }
 
@@ -87,7 +93,7 @@ func TestFindQueryWhere()  {
 func TestNativeSql() {
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
-	re := db.NativeSql("delete  from student")
+	re, _ := db.NativeSql("delete  from student")
 	fmt.Println("改变条数",re)
 
 }
