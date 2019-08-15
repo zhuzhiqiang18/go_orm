@@ -12,7 +12,7 @@ import (
 
 func TestSave(){
 	db, err := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
-	defer db.Close()
+	db.Close()
 	if err!=nil {
 		fmt.Println(err)
 		return
