@@ -5,7 +5,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 	"github.com/zhuzhiqiang18/go_orm/conn"
-	"github.com/zhuzhiqiang18/go_orm/log"
+	"github.com/zhuzhiqiang18/go_orm/logger"
 	"reflect"
 	"strings"
 )
@@ -54,7 +54,7 @@ func (db Db) Delete(obj interface{}, whereSql ...string) (int64, error) {
 
 
 func (db Db) exe(sqlStr string, para []interface{}) (int64, int64, error) {
-	log.Debug(sqlStr,para)
+	logger.Debug(sqlStr,para)
 	stmt, err := db.connDb.Prepare(sqlStr)
 	var result sql.Result
 	defer stmt.Close()
@@ -95,7 +95,7 @@ func (db Db) FindQuery(o interface{}, findWhere map[string]interface{}, findFiel
 	//拼接sql
 	sqlStr, para, fields := find(oType,findWhere,findFields...)
 
-	log.Debug(sqlStr,para)
+	logger.Debug(sqlStr,para)
 	stmt, err := db.connDb.Prepare(sqlStr)
 	if err != nil {
 		panic(err)

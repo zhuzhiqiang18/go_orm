@@ -25,10 +25,10 @@ var dbConifg DbSourceConfig
 	//设置最大闲置连接数
 	db.SetMaxIdleConns(10)
 
-	log := logrus.New()
-	//log.SetReportCaller(true)
+	logger := logrus.New()
+	//logger.SetReportCaller(true)
 	logrus.SetLevel(logrus.InfoLevel)
-	log.WithFields(logrus.Fields{}).Info("DB COON ……")
+	logger.WithFields(logrus.Fields{}).Info("DB COON ……")
 
 }*/
 
