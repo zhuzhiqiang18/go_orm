@@ -63,9 +63,10 @@ func TestFindQueryField()  {
 	defer db.Close()
 	list := db.FindQuery(&model.Student{}, nil,"Name","No","Address")
 	for _,stu := range *list {
-		fmt.Println(stu.(model.Student).Name)
+		fmt.Println(stu.(model.Student))
+		/*fmt.Println(stu.(model.Student).Name)
 		fmt.Println(stu.(model.Student).No)
-		fmt.Println(stu.(model.Student).Address)
+		fmt.Println(stu.(model.Student).Address)*/
 	}
 
 }
@@ -79,5 +80,14 @@ func TestFindQueryWhere()  {
 		fmt.Println(stu.(model.Student).No)
 		fmt.Println(stu.(model.Student).Address)
 	}
+}
+
+
+
+func TestNativeSql() {
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	re := db.NativeSql("delete  from student")
+	fmt.Println("改变条数",re)
 
 }

@@ -82,7 +82,7 @@ func isNotBlank(value reflect.Value) bool {
 拼接插入sql
  */
 func insertSql(o interface{}) (string, []interface{}) {
-	value := make([]interface{},0,10)
+	value := make([]interface{},0)
 	para,tableName := getNotValuePram(o)
 	sql := "insert into "+tableName+"(%s) values (%s)"
 	sqlPrefix := ""
@@ -102,7 +102,7 @@ func getUpdateSql(o interface{},sqlWhere ...string) (string, []interface{})  {
 	fieldMap := make(map[string]int)
 	wherePara := make([]interface{},0,5)
    // tags := getTag(o,sqlWhere...)
-	value := make([]interface{},0,10)
+	value := make([]interface{},0)
 	para,tableName := getNotValuePram(o)
 	sql := "update "+tableName+" set %s  %s"
 	sqlPrefix := ""
@@ -134,7 +134,7 @@ func getDeleteSql(o interface{},sqlwhere ...string) (string, []interface{})  {
 	fieldMap := make(map[string]int)
 	wherePara := make([]interface{},0,5)
     //tags := getTag(o,sqlwhere...)
-	value := make([]interface{},0,10)
+	value := make([]interface{},0)
 	para,tableName := getNotValuePram(o)
 	sql := "delete from "+tableName+" %s "
 
@@ -163,7 +163,7 @@ func getDeleteSql(o interface{},sqlwhere ...string) (string, []interface{})  {
  */
 func find(oType reflect.Type, findWhere map[string]interface{}, findFields ...string) (string, []interface{}, []string) {
 	//felid := make([]string,0)
-	value := make([]interface{},0,10)
+	value := make([]interface{},0)
 
 	var tags  []string
 	var fields []string

@@ -1,16 +1,18 @@
 package main
 
-import (
-	"github.com/zhuzhiqiang18/go_orm/tests"
-)
+import "github.com/zhuzhiqiang18/go_orm/tests"
 
 func main() {
-	tests.TestSave()
+	/*for i:=0;i<10000;i++ {
+		tests.TestSave()
+	}*/
+	//tests.TestSave()
 	//tests.TestDelete()
 	//tests.TestUpdate()
 	//tests.TestFindQuery()
-	//tests.TestFindQueryField()
+	tests.TestFindQueryField()
 	//tests.TestFindQueryWhere()
+	//tests.TestNativeSql()
 
 
 }

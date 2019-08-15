@@ -5,7 +5,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 	"github.com/zhuzhiqiang18/go_orm/conn"
-
 	"reflect"
 )
 
@@ -65,7 +64,7 @@ func (db Db) exe(sql string,para []interface{}) int64  {
 /**
 直接slq执行
  */
-func (db Db) nativeSqlUpdate(nativeSql string,parameters []interface{}) int64  {
+func (db Db) NativeSql(nativeSql string,parameters ...interface{}) int64  {
 	return db.exe(nativeSql,parameters)
 }
 
