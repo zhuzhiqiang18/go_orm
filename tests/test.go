@@ -130,3 +130,30 @@ func TestAutoInsertId()  {
 	fmt.Println("改变条数",re)
 	fmt.Println("最后插入主键",lastInsertId)
 }
+/**
+测试事务回滚
+ */
+func TestTx()  {
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	var student model.Student
+	student.Name="张三"
+	student.No="00000000"
+    tx:=db.Begin()
+	for i:=0;i<10;i++{
+		re, lastInsertId := tx.Save(&student)
+		fmt.Println("改变条数",re)
+		fmt.Println("最后插入主键",lastInsertId)
+	}
+	defer func() {
+		err:=recover()
+		if err !=nil {
+			tx.Rollback()
+		}
+	}()
+
+	panic("事务回滚")
+
+	tx.Commit()
+
+}

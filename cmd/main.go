@@ -13,5 +13,6 @@ func main() {
 	//tests.TestFindQueryField()
 	//tests.TestFindQueryWhere()
 	//tests.TestNativeSql()
-	tests.TestAutoInsertId()
+	//tests.TestAutoInsertId()
+	tests.TestTx()
 }

@@ -12,12 +12,25 @@ import (
 
 //var connDb sql.DB
 
+type interfaceDb interface {
+     Prepare(query string) (*sql.Stmt, error)
+}
+
+
 type Db struct {
 	connDb *sql.DB
+	connTx *sql.Tx
+	isTX bool
+	abstractDb interfaceDb
 }
 
 func getDb(connDb *sql.DB) *Db {
-	return &Db{connDb:connDb}
+	var db = Db{}
+	db.connDb=connDb
+	db.connTx=nil
+	db.isTX=false
+	db.abstractDb=connDb
+	return &db
 }
 
 func  Open(User string, Password string, Host string, Port int64, Table string) (*Db, error) {
@@ -55,7 +68,7 @@ func (db Db) Delete(obj interface{}, whereSql ...string) int64 {
 
 func (db Db) exe(sqlStr string, para []interface{}) (int64, int64) {
 	logger.Debug(sqlStr,para)
-	stmt, err := db.connDb.Prepare(sqlStr)
+	stmt, err := db.abstractDb.Prepare(sqlStr)
 	if err!=nil {
 		panic(err)
 	}
@@ -108,7 +121,8 @@ func (db Db) FindQuery(o interface{}, findWhere map[string]interface{}, findFiel
 	sqlStr, para, fields := find(oType,findWhere,findFields...)
 
 	logger.Debug(sqlStr,para)
-	stmt, err := db.connDb.Prepare(sqlStr)
+
+	stmt, err := db.abstractDb.Prepare(sqlStr)
 	if err != nil {
 		panic(err)
 	}
@@ -164,4 +178,32 @@ func resultMapping(v reflect.Value, result *[]interface{}, fields []string) inte
 	return v.Interface()
 }
 
+func (db *Db)Begin() *Db {
+	var newDb = Db{}
+	newDb.connDb=db.connDb
 
+	tx, err :=db.connDb.Begin()
+	if err != nil {
+		panic(err)
+	}
+
+	newDb.connTx=tx
+	newDb.isTX=true
+	newDb.abstractDb=newDb.connTx
+	return &newDb
+}
+
+
+func (tx *Db) Commit() error {
+	if tx.connTx ==nil {
+		panic("未获得事务")
+	}
+	return tx.connTx.Commit()
+}
+
+func (tx *Db) Rollback() error {
+	if tx.connTx ==nil {
+		panic("未开启事务")
+	}
+	return tx.connTx.Rollback()
+}
