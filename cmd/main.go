@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/zhuzhiqiang18/go_orm"
+	"github.com/zhuzhiqiang18/go_orm/tests"
 )
 
 func main() {
@@ -12,7 +13,7 @@ func main() {
 	//tests.TestSave()
 	//tests.TestDelete()
 	//tests.TestUpdate()
-	//tests.TestFindQuery()
+	tests.TestFindQuery()
 	//tests.TestFindQueryField()
 	//tests.TestFindQueryWhere()
 	//tests.TestNativeSql()

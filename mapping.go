@@ -1,7 +1,6 @@
 package go_orm
 
 import (
-	"database/sql"
 	"reflect"
 )
 
