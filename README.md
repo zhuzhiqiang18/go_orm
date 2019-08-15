@@ -1,11 +1,11 @@
 # go_orm
-go web 增删改查 封装了自己的orm
+初学GO 自己封装的orm 旨在技术学习
 
 # ORM 
 使用反射
 # Model约定
 1. tag sql 代表数据库中的字段 不注明 则使用结构体字段 
-2. 数据库 不区分大小写
+2. 数据库表 不区分大小写
 ```go
 type Student struct {
 	Id int `sql:"id"` 
