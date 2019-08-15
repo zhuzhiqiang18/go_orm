@@ -26,21 +26,26 @@ type Student struct {
 # CURD使用方法
 ## 插入
 ```go
-   db, err := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
-   	defer db.Close()
-   	if err!=nil {
-   		fmt.Println(err)
-   		return
-   	}
-   	var student model.Student
-   	student.Name="张三"
-   	student.Address="中国"
-   	student.No="123456"
-   	student.ClassId=1
-   	student.Create = time.Now()
-   	student.IsReading =true
-   	res:= db.Save(&student)
-   	fmt.Println("改变行数",res)
+  db, err := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+  	defer db.Close()
+  	if err!=nil {
+  		fmt.Println(err)
+  		return
+  	}
+  	var student model.Student
+  	student.Name="张三"
+  	student.Address="中国"
+  	student.No="123456"
+  	student.ClassId=1
+  	student.Create = time.Now()
+  	student.IsReading =true
+  	res, lastInsertId, err := db.Save(&student)
+  	if err !=nil {
+  		fmt.Println("err")
+  		return
+  	}
+  	fmt.Println("改变行数",res)
+  	fmt.Println("最后插入的id",lastInsertId)
 ```
 ## 删除
 ```go
