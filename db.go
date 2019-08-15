@@ -115,6 +115,10 @@ func (db Db) FindGql(gql *Gql){
 	}
 	logger.Debug(gql.GetGql(),gql.GetPara())
 
+	//todo field bind
+	//tags,fs := getTagAndFeild(oType)
+
+
 	stmt, err := db.abstractDb.Prepare(gql.GetGql())
 	if err != nil {
 		panic(err)
