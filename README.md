@@ -39,11 +39,7 @@ type Student struct {
   	student.ClassId=1
   	student.Create = time.Now()
   	student.IsReading =true
-  	res, lastInsertId, err := db.Save(&student)
-  	if err !=nil {
-  		fmt.Println("err")
-  		return
-  	}
+  	res, lastInsertId := db.Save(&student)
   	fmt.Println("改变行数",res)
   	fmt.Println("最后插入的id",lastInsertId)
 ```
