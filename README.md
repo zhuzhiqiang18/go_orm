@@ -6,7 +6,8 @@
 2. [Model约定](model约定)
 3. [如何使用](#引入包)
 4. [链接数据库](#链接数据库)
-5. [CURD使用方法](curd使用方法)
+5. [CURD使用方法](#curd使用方法)
+6. [事务](#事务)
 
 # ORM 
 使用反射
@@ -107,3 +108,27 @@ db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 ```
 ### 联合查询
 待更新……
+# 事务
+```go
+db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	var student model.Student
+	student.Name="张三"
+	student.No="00000000"
+    tx:=db.Begin()
+	for i:=0;i<10;i++{
+		re, lastInsertId := tx.Save(&student)
+		fmt.Println("改变条数",re)
+		fmt.Println("最后插入主键",lastInsertId)
+	}
+	defer func() {
+		err:=recover()
+		if err !=nil {
+			tx.Rollback()
+		}
+	}()
+
+	panic("事务回滚")
+
+	tx.Commit()
+```
