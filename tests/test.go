@@ -9,7 +9,9 @@ import (
 )
 
 
-
+/**
+插入
+ */
 func TestSave(){
 	db, err := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
@@ -24,7 +26,7 @@ func TestSave(){
 	student.ClassId=1
 	student.Create = time.Now()
 	student.IsReading =true
-	res, lastInsertId, err := db.Save(&student)
+	res, lastInsertId := db.Save(&student)
 	if err !=nil {
 		fmt.Println("err")
 		return
@@ -34,26 +36,34 @@ func TestSave(){
 
 }
 
+/**
+删除
+ */
 func TestDelete(){
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	var student model.Student
 	student.ClassId=1
-	res, _ := db.Delete(&student,"class_id")
+	res := db.Delete(&student,"class_id")
 	fmt.Println("改变行数",res)
 }
 
-
+/**
+更新
+ */
 func TestUpdate(){
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	var student model.Student
 	student.Name="张三"
 	student.No="00000000"
-	res, _ := db.Update(&student,"name")
+	res := db.Update(&student,"name")
 	fmt.Println("改变行数",res)
 }
 
+/**
+单表全查询
+ */
 func TestFindQuery()  {
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
@@ -64,6 +74,9 @@ func TestFindQuery()  {
 	}
 }
 
+/**
+指定返回字段
+ */
 func TestFindQueryField()  {
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
@@ -77,6 +90,9 @@ func TestFindQueryField()  {
 
 }
 
+/**
+但表条件查询
+ */
 func TestFindQueryWhere()  {
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
@@ -89,11 +105,28 @@ func TestFindQueryWhere()  {
 }
 
 
-
+/**
+测试sql直接执行
+ */
 func TestNativeSql() {
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
-	re, _ := db.NativeSql("delete  from student")
+	re := db.NativeSql("delete  from student")
 	fmt.Println("改变条数",re)
 
+}
+
+/**
+测试非自增主键 返回最后插入值
+ */
+func TestAutoInsertId()  {
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	var class model.Class
+	class.Name="tset"
+	class.Id=1
+
+	re, lastInsertId := db.Save(&class)
+	fmt.Println("改变条数",re)
+	fmt.Println("最后插入主键",lastInsertId)
 }

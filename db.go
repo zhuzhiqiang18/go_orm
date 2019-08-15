@@ -30,54 +30,66 @@ func  (db Db) Close() error {
 	return db.connDb.Close()
 }
 
-func (db Db) Save(obj interface{}) (int64, int64, error) {
+func (db Db) Save(obj interface{}) (int64, int64) {
 
 	sqlStr,para := insertSql(obj)
 	return db.exe(sqlStr,para)
 }
 
-func (db Db) Update(obj interface{}, whereSql ...string) (int64, error) {
+func (db Db) Update(obj interface{}, whereSql ...string) int64 {
 	sqlStr,para := getUpdateSql(obj,whereSql...)
 
-	affected,_,err:= db.exe(sqlStr,para)
-	return affected,err
+	affected,_:= db.exe(sqlStr,para)
+	return affected
 }
 
 
-func (db Db) Delete(obj interface{}, whereSql ...string) (int64, error) {
+func (db Db) Delete(obj interface{}, whereSql ...string) int64 {
 	sqlStr,para := getDeleteSql(obj,whereSql...)
 
-	affected,_,err:= db.exe(sqlStr,para)
-	return affected,err
+	affected,_:= db.exe(sqlStr,para)
+	return affected
 }
 
 
 
-func (db Db) exe(sqlStr string, para []interface{}) (int64, int64, error) {
+func (db Db) exe(sqlStr string, para []interface{}) (int64, int64) {
 	logger.Debug(sqlStr,para)
 	stmt, err := db.connDb.Prepare(sqlStr)
+	if err!=nil {
+		panic(err)
+	}
 	var result sql.Result
 	defer stmt.Close()
 	result,err = stmt.Exec(para...)
+	if err!=nil {
+		panic(err)
+	}
 	//改变行数
 	var affected int64
 	//最后插入的ID
 	lastInsertId :=int64(0)
 	affected,err = result.RowsAffected()
+	if err!=nil {
+		panic(err)
+	}
 
 	if strings.HasPrefix(sqlStr,"insert") {
 		lastInsertId,err =result.LastInsertId()
+		if err!=nil {
+			panic(err)
+		}
 	}
 
-	return affected,lastInsertId,err
+	return affected,lastInsertId
 }
 
 /**
 直接slq执行
  */
-func (db Db) NativeSql(nativeSql string, parameters ...interface{}) (int64, error) {
-	affected,_,err:= db.exe(nativeSql,parameters)
-	return affected,err
+func (db Db) NativeSql(nativeSql string, parameters ...interface{}) int64 {
+	affected,_:= db.exe(nativeSql,parameters)
+	return affected
 }
 
 
