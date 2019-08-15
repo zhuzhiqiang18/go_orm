@@ -180,9 +180,9 @@ func resultMapping(v reflect.Value, result *[]interface{}, fields []string) inte
 
 func (db *Db)Begin() *Db {
 	var newDb = Db{}
-	newDb.connDb=db.connDb
+	newDb.connDb= db.connDb
 
-	tx, err :=db.connDb.Begin()
+	tx, err := db.connDb.Begin()
 	if err != nil {
 		panic(err)
 	}
@@ -194,16 +194,16 @@ func (db *Db)Begin() *Db {
 }
 
 
-func (tx *Db) Commit() error {
-	if tx.connTx ==nil {
+func (db *Db) Commit() error {
+	if db.connTx ==nil && !db.isTX {
 		panic("未获得事务")
 	}
-	return tx.connTx.Commit()
+	return db.connTx.Commit()
 }
 
-func (tx *Db) Rollback() error {
-	if tx.connTx ==nil {
+func (db *Db) Rollback() error {
+	if db.connTx ==nil && !db.isTX {
 		panic("未开启事务")
 	}
-	return tx.connTx.Rollback()
+	return db.connTx.Rollback()
 }

@@ -158,3 +158,33 @@ func TestTx()  {
 	tx.Commit()//事务提交
 
 }
+
+func TestTx1()  {
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	var student model.Student
+	student.Name="张三"
+	student.No="00000000"
+	student.ClassId=1
+	tx:=db.Begin()//获取事务
+
+	tx.Update(&student,"name")
+
+	var c model.Class
+	c.Name="张三"
+	c.Id=2
+	tx.Save(&c)
+
+	defer func() {
+		err:=recover()
+		if err !=nil {
+			tx.Rollback()//事务回滚
+			return
+		}
+	}()
+
+	panic("事务回滚")
+
+	tx.Commit()//事务提交
+
+}
