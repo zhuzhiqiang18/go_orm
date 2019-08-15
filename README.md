@@ -1,4 +1,4 @@
-# go_web_curd
+# go_orm
 go web 增删改查 封装了自己的orm
 
 # ORM 
@@ -15,10 +15,18 @@ type Student struct {
 	ClassId int `sql:"class_id"`
 }
 ```
+# 引入包
+> import "github.com/zhuzhiqiang18/go_orm"
+# 链接数据库
+只支持MYSQL
+```go
+ db, err := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+   	defer db.Close()
+```
 # CURD使用方法
 ## 插入
 ```go
-   db, err := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+   db, err := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
    	defer db.Close()
    	if err!=nil {
    		fmt.Println(err)
@@ -36,7 +44,7 @@ type Student struct {
 ```
 ## 删除
 ```go
-  db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+  db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
   	defer db.Close()
   	var student model.Student
   	student.ClassId=1
@@ -45,7 +53,7 @@ type Student struct {
 ```
 ## 更改
 ```go
-db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	var student model.Student
 	student.Name="张三"
@@ -56,7 +64,7 @@ db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
 ## 查询
 ### 单表全查询
 ```go
-db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	//传类型地址
 	list := db.FindQuery(&model.Student{}, nil)
@@ -66,7 +74,7 @@ db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
 ```
 ### 单表指定字段查询
 ```go
-db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	list := db.FindQuery(&model.Student{}, nil,"Name","No","Address")
 	for _,stu := range *list {
@@ -80,7 +88,7 @@ db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
 
 
 ```go
-db, _ := orm.Open("root","123456","127.0.0.1",3306,"go_test")
+db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	list := db.FindQuery(&model.Student{}, map[string]interface{}{"name": "张三"},"Name","No","Address")
 	for _,stu := range *list {
