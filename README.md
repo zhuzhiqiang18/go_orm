@@ -115,7 +115,7 @@ db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	var student model.Student
 	student.Name="张三"
 	student.No="00000000"
-    tx:=db.Begin()
+    tx:=db.Begin()//获取事务
 	for i:=0;i<10;i++{
 		re, lastInsertId := tx.Save(&student)
 		fmt.Println("改变条数",re)
