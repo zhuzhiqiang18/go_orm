@@ -126,7 +126,6 @@ func (db Db) FindGql(gql *Gql) *[]interface{} {
 	para := gql.GetPara()
 	rows,err := stmt.Query(*(para)...)
 	if err !=nil {
-		logrus.WithFields(logrus.Fields{}).Error(err)
 		panic(err)
 	}
 
