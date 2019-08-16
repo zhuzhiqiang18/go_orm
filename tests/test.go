@@ -191,7 +191,9 @@ func TestTx1()  {
 
 func TestGql()  {
 	var gql go_orm.Gql
+	//select * from Student where name ="张三" and class_id = 1
 	gql.Where("name = ? ").Where("class_id = ?").Bind(&model.Student{}).SetPara("张三",1)
+
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	list := db.FindGql(&gql)

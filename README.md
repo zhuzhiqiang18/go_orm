@@ -8,6 +8,7 @@
 4. [链接数据库](#链接数据库)
 5. [CURD使用方法](#curd使用方法)
 6. [事务](#事务)
+7. [GQL](#gql)
 
 # ORM 
 使用反射
@@ -132,4 +133,36 @@ db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	panic("事务回滚")
 
 	tx.Commit()//事务提交
+```
+# GQL
+> gql 是一个 sql 生成器
+
+```go
+    //select * from Student where name ="张三" and class_id = 1
+	var gql go_orm.Gql
+	gql.Where("name = ? ").Where("class_id = ?").Bind(&model.Student{}).SetPara("张三",1)
+
+   //select name,class_id from Student where name ="张三" and class_id = 1
+   	new(go_orm.Gql).Where("name = ? ").Where("class_id = ?").Bind(&model.Student{}).SetPara("张三",1).Fields("name","class_id")
+   
+   	//select name,class_id from Student where name ="张三" and class_id = 1 or class_id = 2
+   	new(go_orm.Gql).Where("name = ? ").Where("class_id = ?").Or("class_id = ?").Bind(&model.Student{}).SetPara("张三",1,2).Fields("name","class_id")
+   
+   	//select name,class_id from Student where name ="张三" and class_id = 1 or class_id = 2 order by id desc
+   	new(go_orm.Gql).Where("name = ? ").Where("class_id = ?").Or("class_id = ?").Order("id desc").Bind(&model.Student{}).SetPara("张三",1,2).Fields("name","class_id")
+   
+```
+## gql查询
+```go
+var gql go_orm.Gql
+	//select * from Student where name ="张三" and class_id = 1
+	gql.Where("name = ? ").Where("class_id = ?").Bind(&model.Student{}).SetPara("张三",1)
+
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	list := db.FindGql(&gql)
+	
+	for _,stu := range *list {
+		fmt.Println(stu)
+	}
 ```
