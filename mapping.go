@@ -23,4 +23,19 @@ func resultMapping(v reflect.Value, result *[]interface{}, fields []string) inte
 	return v.Interface()
 }
 
+func resultMappingFieldValueMap(v reflect.Value, result *map[string]interface{}) interface{} {
+	for field,value := range *result{
+		if v.FieldByName(field).Type().Kind()==reflect.Bool {
+			if value == int64(1){
+				v.FieldByName(field).Set(reflect.ValueOf(true))
+			}else {
+				v.FieldByName(field).Set(reflect.ValueOf(false))
+			}
+		}else{
+			v.FieldByName(field).Set(reflect.ValueOf(value))
+		}
+	}
+	return v.Interface()
+}
+
 

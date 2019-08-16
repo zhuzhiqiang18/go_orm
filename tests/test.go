@@ -188,3 +188,15 @@ func TestTx1()  {
 	tx.Commit()//事务提交
 
 }
+
+func TestGql()  {
+	var gql go_orm.Gql
+	gql.Where("name = ? ").Where("class_id = ?").Bind(&model.Student{}).SetPara("张三",1)
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	list := db.FindGql(&gql)
+
+	for _,stu := range *list {
+		fmt.Println(stu)
+	}
+}

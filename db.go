@@ -31,8 +31,8 @@ func getDb(connDb *sql.DB) *Db {
 	return &db
 }
 
-func  Open(User string, Password string, Host string, Port int64, Table string) (*Db, error) {
-	db,err := conn.Open(User,Password,Host,Port,Table)
+func  Open(User string, Password string, Host string, Port int64, DataBaseName string) (*Db, error) {
+	db,err := conn.Open(User,Password,Host,Port,DataBaseName)
 	return getDb(db),err
 }
 
@@ -102,7 +102,7 @@ func (db Db) NativeSql(nativeSql string, parameters ...interface{}) int64 {
 	return affected
 }
 
-func (db Db) FindGql(gql *Gql){
+func (db Db) FindGql(gql *Gql) *[]interface{} {
 	list := make([]interface{},0)
 	o := gql.GetBind()
 	oType := reflect.TypeOf(o)
@@ -115,9 +115,7 @@ func (db Db) FindGql(gql *Gql){
 	}
 	logger.Debug(gql.GetGql(),gql.GetPara())
 
-	//todo field bind
-	//tags,fs := getTagAndFeild(oType)
-
+	tagField,_ := getTagAndFeildMap(oType)
 
 	stmt, err := db.abstractDb.Prepare(gql.GetGql())
 	if err != nil {
@@ -135,6 +133,7 @@ func (db Db) FindGql(gql *Gql){
 	defer rows.Close()
 	for rows.Next()  {
 		dataTypes,err :=rows.ColumnTypes()
+
 		if err != nil{
 			panic(err)
 		}
@@ -148,11 +147,11 @@ func (db Db) FindGql(gql *Gql){
 		if err!=nil{
 			panic(err)
 		}
-
-		converResult := mappingConver(dataTypes,scans)
-		bean := resultMapping(oValue,converResult,gql.fields)
+		converResult := mappingConverMap(dataTypes,scans,tagField)
+		bean := resultMappingFieldValueMap(oValue,converResult)
 		list = append(list,bean)
 	}
+	return &list
 
 }
 

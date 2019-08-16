@@ -2,6 +2,7 @@ package go_orm
 
 import (
 	"fmt"
+	"reflect"
 )
 
 /**
@@ -70,15 +71,20 @@ func (gql *Gql) GetGql() string {
 		}
 		gql.selectSql=ss[:len(ss)-1]
 	}
-	
-	if gql.isCount  {
-		return fmt.Sprintf("%s count(%s) %s %s %s","select",gql.selectSql,gql.andSql,gql.orSql,gql.orderBySql)
+	var tableType reflect.Type
+	if reflect.TypeOf(gql.t).Kind() ==reflect.Ptr {
+		tableType =reflect.TypeOf(gql.t).Elem()
 	}
 
-	return fmt.Sprintf("%s %s %s %s %s","select",gql.selectSql,gql.andSql,gql.orSql,gql.orderBySql)
+
+	if gql.isCount  {
+		return fmt.Sprintf("%s count(%s) form %s  %s %s %s","select",gql.selectSql,tableType.Name(),gql.andSql,gql.orSql,gql.orderBySql)
+	}
+
+	return fmt.Sprintf("%s %s from %s %s %s %s","select",gql.selectSql,tableType.Name(),gql.andSql,gql.orSql,gql.orderBySql)
 }
 
-func (gql *Gql) setPara(para ...interface{}) *Gql {
+func (gql *Gql) SetPara(para ...interface{}) *Gql {
 	gql.para=para
 	return gql
 }

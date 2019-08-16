@@ -261,9 +261,7 @@ func conver(value reflect.Value,fType reflect.StructField) interface{}  {
 
 
 func mappingConver(columnTypes []*sql.ColumnType, results []interface{}) *[]interface{} {
-
 	converResult := make([]interface{},0)
-
 	for i := 0;i< len(columnTypes);i++ {
 		re := string(*reflect.ValueOf(results[i]).Interface().(*sql.RawBytes))
 		switch columnTypes[i].DatabaseTypeName(){
@@ -288,10 +286,45 @@ func mappingConver(columnTypes []*sql.ColumnType, results []interface{}) *[]inte
 			}
 
 		}
-
-
 	return &converResult
 }
+
+func mappingConverMap(columnTypes []*sql.ColumnType, results []interface{}, tagField *map[string]string) *map[string]interface{} {
+	fieldValueMap := make(map[string]interface{})
+	for i := 0;i< len(columnTypes);i++ {
+		re := string(*reflect.ValueOf(results[i]).Interface().(*sql.RawBytes))
+		switch columnTypes[i].DatabaseTypeName(){
+		case "VARCHAR","CHAR","TEXT"://字符串
+			tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,re)
+		case "TIMESTAMP"://日期
+			if len(re)==0 {
+				tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,time.Time{})
+			}else{
+				date,err :=time.Parse("2006-01-02 15:04:05",re)
+				if err!=nil{
+					panic(err)
+				}
+				tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,date)
+			}
+		case "FLOAT","DOUBLE","DECIMAL"://浮点
+			reFloat,_ := strconv.ParseFloat(re,64)
+			tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,reFloat)
+		case "INT","LONG"://整数
+			reInt,_ := strconv.ParseInt(re,10,64)
+			tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,reInt)
+		}
+
+	}
+	return &fieldValueMap
+}
+
+func tagFieldConver(tagName string,fieldValueMap *map[string]interface{},tagField *map[string]string,re interface{}) {
+	ff := (*tagField)[tagName]
+	if len(ff)>0{
+		(*fieldValueMap)[ff]=re
+	}
+}
+
 
 /**
 获取tag
@@ -332,6 +365,25 @@ func getTagAndFeild(t reflect.Type) ([]string,[]string) {
 		fields=append(fields,sField.Name)
 	}
 	return tags,fields
+}
+/**
+获取tag feild map
+ */
+func getTagAndFeildMap(t reflect.Type) (*map[string]string, *map[string]string) {
+	tagFeildMap := make(map[string]string)
+	feildTagMap := make(map[string]string)
+	ob := t
+	for i:=0;i<t.NumField(); i++  {
+		sField := ob.Field(i)
+
+		tag := sField.Tag.Get("sql")
+		if len(tag)==0 {
+			tag=sField.Name
+		}
+		tagFeildMap[tag]=sField.Name
+		feildTagMap[sField.Name]=tag
+	}
+	return &tagFeildMap,&feildTagMap
 }
 
 func getTagByFeild(t reflect.Type, findFeilds []string) ([]string,[]string) {

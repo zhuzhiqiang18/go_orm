@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"github.com/zhuzhiqiang18/go_orm"
 	"github.com/zhuzhiqiang18/go_orm/tests"
 )
 
@@ -13,17 +11,13 @@ func main() {
 	//tests.TestSave()
 	//tests.TestDelete()
 	//tests.TestUpdate()
-	tests.TestFindQuery()
+	//tests.TestFindQuery()
 	//tests.TestFindQueryField()
 	//tests.TestFindQueryWhere()
 	//tests.TestNativeSql()
 	//tests.TestAutoInsertId()
 	//tests.TestTx()
 	//tests.TestTx1()
-	var gql go_orm.Gql
-	sql:=gql.Where("name = ?").Where("age = ?").Or("is_reading = ?").Order("id desc").Count().GetGql()
-	fmt.Println(sql)
-
-	fmt.Println(new(go_orm.Gql).Where("name = ?").Where("age = ?").Or("is_reading = ?").Order("id desc").New().GetGql())
+	tests.TestGql()
 
 }

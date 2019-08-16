@@ -32,8 +32,8 @@ var dbConifg DbSourceConfig
 
 }*/
 
-func  Open(User string, Password string, Host string, Port int64, Table string) (*sql.DB, error) {
-	dbConifg.dbSourceConfig(User,Password,Host,Port,Table)
+func  Open(User string, Password string, Host string, Port int64, DataBaseName string) (*sql.DB, error) {
+	dbConifg.dbSourceConfig(User,Password,Host,Port,DataBaseName)
 	var err error
 	db,err = sql.Open("mysql",dbConifg.GetDns())
 
