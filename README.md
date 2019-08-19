@@ -9,6 +9,7 @@
 5. [CURD使用方法](#curd使用方法)
 6. [事务](#事务)
 7. [GQL](#gql)
+8. [NULL](#null)
 
 # ORM 
 使用反射
@@ -166,3 +167,44 @@ var gql go_orm.Gql
 		fmt.Println(stu)
 	}
 ```
+#NULL
+>GO中没有NULL 为适配数据库中的NULL 以及JSON的NULL 引入第三方包 [gopkg.in/guregu/null.v3](https://github.com/guregu/null) 方便数据适配
+
+## 示例
+```go
+var teacher model.Teacher
+	teacher.Name = null.NewString("zzq",true)
+	teacher.Create = null.NewTime(time.Now(),true)
+	teacher.IsReading = null.NewBool(true,true)
+	teacher.High = null.NewFloat(160.256,true)
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	count,last:= db.Save(&teacher);
+	fmt.Println("改变条数" , count)
+	fmt.Println("最后插入" , last)
+
+var gql go_orm.Gql
+	//select * from Student where name ="张三" and class_id = 1
+	gql.Where("name = ? ").Where("class_id = ?").Bind(&model.Teacher{}).SetPara("zzq",1)
+
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	list := db.FindGql(&gql)
+
+	for _,stu := range *list {
+		fmt.Println(stu)
+		jsonStr,_:=json.Marshal(stu)
+		fmt.Println(string(jsonStr))
+
+	}
+
+//{{{85 true}} {{zzq true}} {{ false}} {{ false}} {{1 true}} {2019-08-19 15:58:31.148735 +0800 CST m=+0.003854484 false} {{true true}} {{0 false}} {{0 false}}}
+
+//{"Id":85,"Name":"zzq","Address":null,"No":null,"ClassId":1,"Create":null,"IsReading":true,"High":null,"Weight":null}
+
+
+
+
+
+```
+
