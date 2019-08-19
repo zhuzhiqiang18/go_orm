@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.25)
 # Database: go_test
-# Generation Time: 2019-08-14 07:53:18 +0000
+# Generation Time: 2019-08-19 07:51:26 +0000
 # ************************************************************
 
 
@@ -45,6 +45,29 @@ VALUES
 UNLOCK TABLES;
 
 
+# Dump of table class
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `class`;
+
+CREATE TABLE `class` (
+  `id` int(11) unsigned NOT NULL,
+  `name` varchar(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+LOCK TABLES `class` WRITE;
+/*!40000 ALTER TABLE `class` DISABLE KEYS */;
+
+INSERT INTO `class` (`id`, `name`)
+VALUES
+	(1,'tset'),
+	(2,'张三');
+
+/*!40000 ALTER TABLE `class` ENABLE KEYS */;
+UNLOCK TABLES;
+
+
 # Dump of table student
 # ------------------------------------------------------------
 
@@ -68,10 +91,41 @@ LOCK TABLES `student` WRITE;
 
 INSERT INTO `student` (`id`, `name`, `address`, `no`, `class_id`, `create_date`, `is_reading`, `High`, `Weight`)
 VALUES
-	(18,'Zzq',NULL,NULL,NULL,NULL,1,NULL,NULL),
-	(19,'张三','中国','123456',1,'2019-08-14 14:26:05',1,NULL,NULL);
+	(83,'张三','中国','00000000',1,'2019-08-15 11:28:11',1,NULL,NULL);
 
 /*!40000 ALTER TABLE `student` ENABLE KEYS */;
+UNLOCK TABLES;
+
+
+# Dump of table teacher
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `teacher`;
+
+CREATE TABLE `teacher` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `no` varchar(20) DEFAULT NULL,
+  `class_id` int(11) DEFAULT NULL,
+  `create_date` timestamp NULL DEFAULT NULL,
+  `is_reading` int(11) DEFAULT NULL,
+  `High` double DEFAULT NULL,
+  `Weight` decimal(10,0) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+LOCK TABLES `teacher` WRITE;
+/*!40000 ALTER TABLE `teacher` DISABLE KEYS */;
+
+INSERT INTO `teacher` (`id`, `name`, `address`, `no`, `class_id`, `create_date`, `is_reading`, `High`, `Weight`)
+VALUES
+	(84,'zzq',NULL,NULL,1,'2019-08-19 14:39:50',1,160.256,NULL),
+	(85,'zzq',NULL,NULL,1,NULL,1,160.256,NULL),
+	(86,'zzq',NULL,NULL,NULL,'2019-08-19 14:41:32',1,NULL,NULL),
+	(87,'zzq',NULL,NULL,NULL,'2019-08-19 15:50:13',1,160.256,NULL);
+
+/*!40000 ALTER TABLE `teacher` ENABLE KEYS */;
 UNLOCK TABLES;
 
 
