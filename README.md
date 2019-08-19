@@ -167,7 +167,7 @@ var gql go_orm.Gql
 		fmt.Println(stu)
 	}
 ```
-#NULL
+# NULL
 >GO中没有NULL 为适配数据库中的NULL 以及JSON的NULL 引入第三方包 [gopkg.in/guregu/null.v3](https://github.com/guregu/null) 方便数据适配
 
 ## 示例
