@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/zhuzhiqiang18/go_orm"
 	"github.com/zhuzhiqiang18/go_orm/model"
+	"gopkg.in/guregu/null.v3"
 
 	"time"
 )
@@ -205,6 +206,29 @@ func TestGql()  {
 /**
 测试null包
  */
-func TestNullV3()  {
+func TestNull()  {
+	var teacher model.Teacher
+	teacher.Name = null.NewString("zzq",true)
+	teacher.Create = null.NewTime(time.Now(),true)
+	teacher.IsReading = null.NewBool(true,true)
+	teacher.High = null.NewFloat(160.256,true)
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	count,last:= db.Save(&teacher);
+	fmt.Println("改变条数" , count)
+	fmt.Println("最后插入" , last)
+}
 
+func TestFindNull()  {
+	var gql go_orm.Gql
+	//select * from Student where name ="张三" and class_id = 1
+	gql.Where("name = ? ").Where("class_id = ?").Bind(&model.Teacher{}).SetPara("zzq",1)
+
+	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	defer db.Close()
+	list := db.FindGql(&gql)
+
+	for _,stu := range *list {
+		fmt.Println(stu)
+	}
 }

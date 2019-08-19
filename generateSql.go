@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"strconv"
 	"time"
-	"gopkg.in/guregu/null.v3"
 )
 
 //生产sql 及参数
@@ -72,6 +71,20 @@ func isBlank(value reflect.Value) bool {
 		return value.Float() == 0
 	case reflect.Interface, reflect.Ptr:
 		return value.IsNil()
+	case reflect.Struct:
+		switch value.Type().String() {
+		case NULL_Bool:
+			return !value.Field(0).FieldByName(FEDIL_Valid).Bool()
+		case NULL_Float:
+			return !value.Field(0).FieldByName(FEDIL_Valid).Bool()
+		case NULL_Int:
+			return !value.Field(0).FieldByName(FEDIL_Valid).Bool()
+		case NULL_String:
+			return !value.Field(0).FieldByName(FEDIL_Valid).Bool()
+		case NULL_Time:
+			return !value.FieldByName(FEDIL_Valid).Bool()
+		}
+
 	}
 	return reflect.DeepEqual(value.Interface(), reflect.Zero(value.Type()).Interface())
 }
@@ -249,10 +262,12 @@ const(
 	SQL_Float="sql.NullFloat"
 	SQL_Bool="sql.NullBool"
 
-	FEDIL_Int ="Int"
-	FEDIL_Float ="Float"
+	FEDIL_Int ="Int64"
+	FEDIL_Float ="Float64"
 	FEDIL_String ="String"
 	FEDIL_Bool ="Bool"
+	FEDIL_Valid="Valid"
+
 
 
 
@@ -281,19 +296,18 @@ func conver(value reflect.Value,fType reflect.StructField) interface{}  {
 		case TIME:
 			i := value.Interface().(time.Time)
 			return i.Format("2006-01-02 15:04:05")
-
 		case NULL_Bool:
-			if value.FieldByName(SQL_Bool).FieldByName(FEDIL_Bool).Bool(){
+			if value.Field(0).FieldByName(FEDIL_Bool).Bool(){
 				return 1
 			}else {
 				return 0
 			}
 		case NULL_Float:
-			return value.FieldByName(SQL_Float).FieldByName(FEDIL_Float).Float()
+			return value.Field(0).FieldByName(FEDIL_Float).Float()
 		case NULL_Int:
-			return value.FieldByName(SQL_Int).FieldByName(FEDIL_Int).Float()
+			return value.Field(0).FieldByName(FEDIL_Int).Int()
 		case NULL_String:
-			return value.FieldByName(SQL_Float).FieldByName(FEDIL_Float).Float()
+			return value.Field(0).FieldByName(FEDIL_String).String()
 		case NULL_Time:
 			t := value.FieldByName("Time").Interface().(time.Time)
 			return t.Format("2006-01-02 15:04:05")

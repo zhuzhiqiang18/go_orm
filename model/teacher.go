@@ -1,18 +1,20 @@
 package model
 
-import "time"
+import (
+	"gopkg.in/guregu/null.v3"
+)
 
 /**
 学生
  */
 type Teacher struct {
-	Id int64 `sql:"id"`
-	Name string `sql:"name"`
-	Address string `sql:"address"`
-	No string `sql:"no"`
-	ClassId int64 `sql:"class_id"`
-	Create time.Time `sql:"create_date"`
-	IsReading bool `sql:"is_reading"`
-	High float64 `sql:"high"`
-	Weight float64 `sql:"weight"`
+	Id null.Int `sql:"id"`
+	Name null.String `sql:"name"`
+	Address null.String `sql:"address"`
+	No null.String `sql:"no"`
+	ClassId null.Int `sql:"class_id"`
+	Create null.Time `sql:"create_date"`
+	IsReading null.Bool `sql:"is_reading"`
+	High null.Float `sql:"high"`
+	Weight null.Float `sql:"weight"`
 }
