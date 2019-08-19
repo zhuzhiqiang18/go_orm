@@ -202,3 +202,9 @@ func TestGql()  {
 		fmt.Println(stu)
 	}
 }
+/**
+测试null包
+ */
+func TestNullV3()  {
+
+}

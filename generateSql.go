@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strconv"
 	"time"
+	"gopkg.in/guregu/null.v3"
 )
 
 //生产sql 及参数
@@ -34,11 +35,11 @@ func getNotValuePram(obj interface{}) (map[string]interface{},string)  {
 		for i:=0;i<ob.NumField();i++{
 			//获取字段
 			fType := ob.Field(i)
-			if(fType.Type.Kind() == reflect.Struct){
-				if(fType.Type.Name() != "Time"){
+			/*if fType.Type.Kind() == reflect.Struct {
+				if fType.Type.Name() != "Time" {
 					continue
 				}
-			}
+			}*/
 			f:=ob.Field(i).Name
 			//获取字段value
 			v := obValue.FieldByName(f)
@@ -226,12 +227,39 @@ type PageInfo struct {
 	limit (curPage-1)*pageSize,pageSize
 }*/
 
+const(
+	TIME  = "time.Time"
+
+
+	NULL_Int="null.Int"
+	NULL_String="null.String"
+	NULL_Time="null.Time"
+	NULL_Float="null.Float"
+	NULL_Bool="null.Bool"
+
+
+	ZERO_Int="zero.Int"
+	ZERO_String="zero.String"
+	ZERO_Time="zero.Time"
+	ZERO_Float="zero.Float"
+	ZERO_Bool="zero.Bool"
+
+	SQL_Int="sql.NullFloat"
+	SQL_String="sql.NullString"
+	SQL_Float="sql.NullFloat"
+	SQL_Bool="sql.NullBool"
+
+	FEDIL_Int ="Int"
+	FEDIL_Float ="Float"
+	FEDIL_String ="String"
+	FEDIL_Bool ="Bool"
 
 
 
+)
 
 /**
-数据类型转换
+数据类型转换  获取字段
  */
 func conver(value reflect.Value,fType reflect.StructField) interface{}  {
 	switch value.Kind() {
@@ -249,10 +277,30 @@ func conver(value reflect.Value,fType reflect.StructField) interface{}  {
 	case reflect.Float32, reflect.Float64:
 		return value.Float()
 	case reflect.Struct:
-		if fType.Type.Name()=="Time" {
+		switch fType.Type.String() {
+		case TIME:
 			i := value.Interface().(time.Time)
 			return i.Format("2006-01-02 15:04:05")
+
+		case NULL_Bool:
+			if value.FieldByName(SQL_Bool).FieldByName(FEDIL_Bool).Bool(){
+				return 1
+			}else {
+				return 0
+			}
+		case NULL_Float:
+			return value.FieldByName(SQL_Float).FieldByName(FEDIL_Float).Float()
+		case NULL_Int:
+			return value.FieldByName(SQL_Int).FieldByName(FEDIL_Int).Float()
+		case NULL_String:
+			return value.FieldByName(SQL_Float).FieldByName(FEDIL_Float).Float()
+		case NULL_Time:
+			t := value.FieldByName("Time").Interface().(time.Time)
+			return t.Format("2006-01-02 15:04:05")
 		}
+
+
+
 		return nil
 	default:
 		return nil

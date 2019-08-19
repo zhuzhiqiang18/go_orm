@@ -23,6 +23,9 @@ func resultMapping(v reflect.Value, result *[]interface{}, fields []string) inte
 	return v.Interface()
 }
 
+/**
+封装查询结果
+ */
 func resultMappingFieldValueMap(v reflect.Value, result *map[string]interface{}) interface{} {
 	for field,value := range *result{
 		if v.FieldByName(field).Type().Kind()==reflect.Bool {
