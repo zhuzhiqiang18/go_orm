@@ -172,6 +172,20 @@ var gql go_orm.Gql
 
 ## 示例
 ```go
+type Teacher struct {
+	Id null.Int `sql:"id"`
+	Name null.String `sql:"name"`
+	Address null.String `sql:"address"`
+	No null.String `sql:"no"`
+	ClassId null.Int `sql:"class_id"`
+	Create null.Time `sql:"create_date"`
+	IsReading null.Bool `sql:"is_reading"`
+	High null.Float `sql:"high"`
+	Weight null.Float `sql:"weight"`
+}
+
+
+
 var teacher model.Teacher
 	teacher.Name = null.NewString("zzq",true)
 	teacher.Create = null.NewTime(time.Now(),true)
