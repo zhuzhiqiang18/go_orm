@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/zhuzhiqiang18/go_orm"
 	"github.com/zhuzhiqiang18/go_orm/model"
@@ -230,5 +231,8 @@ func TestFindNull()  {
 
 	for _,stu := range *list {
 		fmt.Println(stu)
+		jsonStr,_:=json.Marshal(stu)
+		fmt.Println(string(jsonStr))
+
 	}
 }

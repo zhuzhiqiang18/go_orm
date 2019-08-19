@@ -17,6 +17,7 @@ func main() {
 	//tests.TestTx()
 	//tests.TestTx1()
 	//tests.TestGql()
-	tests.TestNullV3()
+	//tests.TestNull()
+	tests.TestFindNull()
 
 }

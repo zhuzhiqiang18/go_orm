@@ -3,6 +3,7 @@ package go_orm
 import (
 	"database/sql"
 	"fmt"
+	"gopkg.in/guregu/null.v3"
 	"reflect"
 	"strconv"
 	"time"
@@ -74,15 +75,15 @@ func isBlank(value reflect.Value) bool {
 	case reflect.Struct:
 		switch value.Type().String() {
 		case NULL_Bool:
-			return !value.Field(0).FieldByName(FEDIL_Valid).Bool()
+			return !value.Field(0).FieldByName(FIELD_Valid).Bool()
 		case NULL_Float:
-			return !value.Field(0).FieldByName(FEDIL_Valid).Bool()
+			return !value.Field(0).FieldByName(FIELD_Valid).Bool()
 		case NULL_Int:
-			return !value.Field(0).FieldByName(FEDIL_Valid).Bool()
+			return !value.Field(0).FieldByName(FIELD_Valid).Bool()
 		case NULL_String:
-			return !value.Field(0).FieldByName(FEDIL_Valid).Bool()
+			return !value.Field(0).FieldByName(FIELD_Valid).Bool()
 		case NULL_Time:
-			return !value.FieldByName(FEDIL_Valid).Bool()
+			return !value.FieldByName(FIELD_Valid).Bool()
 		}
 
 	}
@@ -262,11 +263,11 @@ const(
 	SQL_Float="sql.NullFloat"
 	SQL_Bool="sql.NullBool"
 
-	FEDIL_Int ="Int64"
-	FEDIL_Float ="Float64"
-	FEDIL_String ="String"
-	FEDIL_Bool ="Bool"
-	FEDIL_Valid="Valid"
+	FIELD_Int    ="Int64"
+	FIELD_Float  ="Float64"
+	FIELD_String ="String"
+	FIELD_Bool   ="Bool"
+	FIELD_Valid  ="Valid"
 
 
 
@@ -297,17 +298,17 @@ func conver(value reflect.Value,fType reflect.StructField) interface{}  {
 			i := value.Interface().(time.Time)
 			return i.Format("2006-01-02 15:04:05")
 		case NULL_Bool:
-			if value.Field(0).FieldByName(FEDIL_Bool).Bool(){
+			if value.Field(0).FieldByName(FIELD_Bool).Bool(){
 				return 1
 			}else {
 				return 0
 			}
 		case NULL_Float:
-			return value.Field(0).FieldByName(FEDIL_Float).Float()
+			return value.Field(0).FieldByName(FIELD_Float).Float()
 		case NULL_Int:
-			return value.Field(0).FieldByName(FEDIL_Int).Int()
+			return value.Field(0).FieldByName(FIELD_Int).Int()
 		case NULL_String:
-			return value.Field(0).FieldByName(FEDIL_String).String()
+			return value.Field(0).FieldByName(FIELD_String).String()
 		case NULL_Time:
 			t := value.FieldByName("Time").Interface().(time.Time)
 			return t.Format("2006-01-02 15:04:05")
@@ -351,40 +352,115 @@ func mappingConver(columnTypes []*sql.ColumnType, results []interface{}) *[]inte
 	return &converResult
 }
 
-func mappingConverMap(columnTypes []*sql.ColumnType, results []interface{}, tagField *map[string]string) *map[string]interface{} {
+func mappingConverMap(columnTypes []*sql.ColumnType, results *[]interface{}, tagField *map[string]string, tagType *map[string]reflect.StructField) *map[string]interface{} {
 	fieldValueMap := make(map[string]interface{})
 	for i := 0;i< len(columnTypes);i++ {
-		re := string(*reflect.ValueOf(results[i]).Interface().(*sql.RawBytes))
+		result:=(*results)[i]
+		re := string(*reflect.ValueOf(result).Interface().(*sql.RawBytes))
+
 		switch columnTypes[i].DatabaseTypeName(){
 		case "VARCHAR","CHAR","TEXT"://字符串
-			tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,re)
+			tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,re,tagType,FIELD_String)
 		case "TIMESTAMP"://日期
-			if len(re)==0 {
+			/*if len(re)==0 {
 				tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,time.Time{})
 			}else{
 				date,err :=time.Parse("2006-01-02 15:04:05",re)
 				if err!=nil{
 					panic(err)
-				}
-				tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,date)
-			}
+				}*/
+				tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,re,tagType,TIME)
+			//}
 		case "FLOAT","DOUBLE","DECIMAL"://浮点
-			reFloat,_ := strconv.ParseFloat(re,64)
-			tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,reFloat)
+			//reFloat,_ := strconv.ParseFloat(re,64)
+			tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,re,tagType,FIELD_Float)
 		case "INT","LONG"://整数
-			reInt,_ := strconv.ParseInt(re,10,64)
-			tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,reInt)
+			//reInt,_ := strconv.ParseInt(re,10,64)
+			tagFieldConver(columnTypes[i].Name(),&fieldValueMap,tagField,re,tagType,FIELD_Int)
 		}
 
 	}
 	return &fieldValueMap
 }
 
-func tagFieldConver(tagName string,fieldValueMap *map[string]interface{},tagField *map[string]string,re interface{}) {
+func tagFieldConver(tagName string,fieldValueMap *map[string]interface{},tagField *map[string]string,re string,tagType *map[string]reflect.StructField,tableType string) {
+	var value interface{}
 	ff := (*tagField)[tagName]
+
 	if len(ff)>0{
-		(*fieldValueMap)[ff]=re
+		fieldType := (*tagType)[tagName]
+		switch fieldType.Type.Kind() {
+		case reflect.Struct:
+			switch fieldType.Type.String() {
+			case TIME:
+				if len(re)==0 {
+					value=time.Time{}
+				}else{
+					date,err :=time.Parse("2006-01-02 15:04:05",re)
+					if err!=nil{
+						panic(err)
+					}
+					value=date
+				}
+			case NULL_Time:
+				if len(re)==0 {
+					value = null.NewTime(time.Now(),false)
+				}else {
+					date,err :=time.Parse("2006-01-02 15:04:05",re)
+					if err!=nil{
+						panic(err)
+					}
+					value = null.NewTime(date,true)
+				}
+			case NULL_String:
+				if len(re)==0 {
+					value = null.NewString(re,false)
+				}else {
+					value = null.NewString(re,true)
+				}
+			case NULL_Float:
+				if len(re)==0 {
+					value = null.NewFloat(0,false)
+				}else {
+					converValue,_ := strconv.ParseFloat(re,64)
+					value = null.NewFloat(converValue,true)
+				}
+			case NULL_Int:
+				if len(re)==0 {
+					value = null.NewInt(0,false)
+				}else {
+					converValue,_ := strconv.ParseInt(re,10,64)
+					value = null.NewInt(converValue,true)
+				}
+			case NULL_Bool:
+				if len(re)==0 {
+					value = null.NewBool(false,false)
+				}else {
+					converValue,_ := strconv.ParseInt(re,10,64)
+					if converValue==int64(1){
+						value = null.NewBool(true,true)
+
+					}else{
+						value = null.NewBool(false,true)
+					}
+				}
+			}
+		default:
+			switch tableType {
+			case FIELD_Int:
+				value,_ = strconv.ParseInt(re,10,64)
+			case FIELD_Float:
+				value,_ = strconv.ParseFloat(re,64)
+			//case FIELD_Bool:
+			case FIELD_String:
+			   value=re
+			}
+
+		}
+
+		(*fieldValueMap)[ff]=value
 	}
+
 }
 
 
@@ -431,9 +507,11 @@ func getTagAndFeild(t reflect.Type) ([]string,[]string) {
 /**
 获取tag feild map
  */
-func getTagAndFeildMap(t reflect.Type) (*map[string]string, *map[string]string) {
+func getTagAndFeildMap(t reflect.Type) (*map[string]string, *map[string]string, *map[string]reflect.StructField, *map[string]reflect.StructField) {
 	tagFeildMap := make(map[string]string)
 	feildTagMap := make(map[string]string)
+	tagTypeMap := make(map[string]reflect.StructField)
+	feildTypeMap := make(map[string]reflect.StructField)
 	ob := t
 	for i:=0;i<t.NumField(); i++  {
 		sField := ob.Field(i)
@@ -443,9 +521,12 @@ func getTagAndFeildMap(t reflect.Type) (*map[string]string, *map[string]string) 
 			tag=sField.Name
 		}
 		tagFeildMap[tag]=sField.Name
+		tagTypeMap[tag]=sField
 		feildTagMap[sField.Name]=tag
+		feildTypeMap[sField.Name]=sField
+
 	}
-	return &tagFeildMap,&feildTagMap
+	return &tagFeildMap,&feildTagMap,&tagTypeMap,&feildTypeMap
 }
 
 func getTagByFeild(t reflect.Type, findFeilds []string) ([]string,[]string) {

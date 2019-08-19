@@ -115,7 +115,7 @@ func (db Db) FindGql(gql *Gql) *[]interface{} {
 	}
 	logger.Debug(gql.GetGql(),gql.GetPara())
 
-	tagField,_ := getTagAndFeildMap(oType)
+	tagField, _, tagType, _ := getTagAndFeildMap(oType)
 
 	stmt, err := db.abstractDb.Prepare(gql.GetGql())
 	if err != nil {
@@ -146,7 +146,7 @@ func (db Db) FindGql(gql *Gql) *[]interface{} {
 		if err!=nil{
 			panic(err)
 		}
-		converResult := mappingConverMap(dataTypes,scans,tagField)
+		converResult := mappingConverMap(dataTypes,&scans,tagField,tagType)
 		bean := resultMappingFieldValueMap(oValue,converResult)
 		list = append(list,bean)
 	}
