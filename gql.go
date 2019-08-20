@@ -58,7 +58,7 @@ func (gql *Gql)Fields(field ...string)  {
 	gql.fields=field
 }
 
-func (gql *Gql) GetGql() string {
+func (gql *Gql) GetGql(dbSetting *DbSetting) string {
 	if gql.t == nil {
 		panic("需要绑定一个结构体")
 	}
@@ -75,13 +75,17 @@ func (gql *Gql) GetGql() string {
 	if reflect.TypeOf(gql.t).Kind() ==reflect.Ptr {
 		tableType =reflect.TypeOf(gql.t).Elem()
 	}
+    tableName := tableType.Name()
+	if dbSetting !=nil {
+		tableName = Format(tableName,dbSetting.tableFormat)
 
-
-	if gql.isCount  {
-		return fmt.Sprintf("%s count(%s) form %s  %s %s %s","select",gql.selectSql,tableType.Name(),gql.andSql,gql.orSql,gql.orderBySql)
 	}
 
-	return fmt.Sprintf("%s %s from %s %s %s %s","select",gql.selectSql,tableType.Name(),gql.andSql,gql.orSql,gql.orderBySql)
+	if gql.isCount  {
+		return fmt.Sprintf("%s count(%s) form %s  %s %s %s","select",gql.selectSql,tableName,gql.andSql,gql.orSql,gql.orderBySql)
+	}
+
+	return fmt.Sprintf("%s %s from %s %s %s %s","select",gql.selectSql,tableName,gql.andSql,gql.orSql,gql.orderBySql)
 }
 
 func (gql *Gql) SetPara(para ...interface{}) *Gql {

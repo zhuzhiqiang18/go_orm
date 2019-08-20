@@ -20,7 +20,11 @@ type Db struct {
 	connTx *sql.Tx
 	isTX bool
 	abstractDb interfaceDb
+	setting *DbSetting
 }
+
+
+
 
 func getDb(connDb *sql.DB) *Db {
 	var db = Db{}
@@ -28,6 +32,7 @@ func getDb(connDb *sql.DB) *Db {
 	db.connTx=nil
 	db.isTX=false
 	db.abstractDb=connDb
+	db.setting=&DbSetting{db:db.connDb,fieldFormat:DEFAULE,tableFormat:DEFAULE}
 	return &db
 }
 
@@ -36,6 +41,9 @@ func  Open(User string, Password string, Host string, Port int64, DataBaseName s
 	return getDb(db),err
 }
 
+func (db *Db) DBSetting() *DbSetting {
+	return db.setting
+}
 
 func  (db Db) Close() error {
 	return db.connDb.Close()
@@ -43,12 +51,12 @@ func  (db Db) Close() error {
 
 func (db Db) Save(obj interface{}) (int64, int64) {
 
-	sqlStr,para := insertSql(obj)
+	sqlStr,para := insertSql(obj,db.setting)
 	return db.exe(sqlStr,para)
 }
 
 func (db Db) Update(obj interface{}, whereSql ...string) int64 {
-	sqlStr,para := getUpdateSql(obj,whereSql...)
+	sqlStr,para := getUpdateSql(obj,db.setting,whereSql...)
 
 	affected,_:= db.exe(sqlStr,para)
 	return affected
@@ -56,7 +64,7 @@ func (db Db) Update(obj interface{}, whereSql ...string) int64 {
 
 
 func (db Db) Delete(obj interface{}, whereSql ...string) int64 {
-	sqlStr,para := getDeleteSql(obj,whereSql...)
+	sqlStr,para := getDeleteSql(obj,db.setting,whereSql...)
 	affected,_:= db.exe(sqlStr,para)
 	return affected
 }
@@ -113,11 +121,11 @@ func (db Db) FindGql(gql *Gql) *[]interface{} {
 	}else{
 		panic("请传递指针类型")
 	}
-	logger.Debug(gql.GetGql(),gql.GetPara())
+	logger.Debug(gql.GetGql(db.setting),gql.GetPara())
 
-	tagField, _, tagType, _ := getTagAndFeildMap(oType)
+	tagField, _, tagType, _ := getTagAndFeildMap(oType,db.setting)
 
-	stmt, err := db.abstractDb.Prepare(gql.GetGql())
+	stmt, err := db.abstractDb.Prepare(gql.GetGql(db.setting))
 	if err != nil {
 		panic(err)
 	}
@@ -165,7 +173,7 @@ func (db Db) FindQuery(o interface{}, findWhere map[string]interface{}, findFiel
 		panic("请传递指针类型")
 	}
 	//拼接sql
-	sqlStr, para, fields := find(oType,findWhere,findFields...)
+	sqlStr, para, fields := find(oType,findWhere,db.setting,findFields...)
 
 	logger.Debug(sqlStr,para)
 
@@ -227,6 +235,7 @@ func (db *Db)Begin() *Db {
 	newDb.connTx=tx
 	newDb.isTX=true
 	newDb.abstractDb=newDb.connTx
+	newDb.setting=db.setting
 	return &newDb
 }
 

@@ -1,12 +1,15 @@
 package go_orm
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	"gopkg.in/guregu/null.v3"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
+	"unicode"
 )
 
 //生产sql 及参数
@@ -96,10 +99,10 @@ func isNotBlank(value reflect.Value) bool {
 /**
 拼接插入sql
  */
-func insertSql(o interface{}) (string, []interface{}) {
+func insertSql(o interface{}, dbSetting *DbSetting) (string, []interface{}) {
 	value := make([]interface{},0)
 	para,tableName := getNotValuePram(o)
-	sql := "insert into "+tableName+"(%s) values (%s)"
+	sql := "insert into "+Format(tableName,dbSetting.tableFormat)+"(%s) values (%s)"
 	sqlPrefix := ""
 	sqlSuffix := ""
 	for k,v := range para {
@@ -113,13 +116,13 @@ func insertSql(o interface{}) (string, []interface{}) {
 /**
 拼接更新sql
  */
-func getUpdateSql(o interface{},sqlWhere ...string) (string, []interface{})  {
+func getUpdateSql(o interface{},dbSetting *DbSetting,sqlWhere ...string) (string, []interface{})  {
 	fieldMap := make(map[string]int)
 	wherePara := make([]interface{},0,5)
    // tags := getTag(o,sqlWhere...)
 	value := make([]interface{},0)
 	para,tableName := getNotValuePram(o)
-	sql := "update "+tableName+" set %s  %s"
+	sql := "update "+Format(tableName,dbSetting.tableFormat)+" set %s  %s"
 	sqlPrefix := ""
 	sqlSuffix := "where 1=1 "
 	for _,s := range sqlWhere {
@@ -145,13 +148,13 @@ func getUpdateSql(o interface{},sqlWhere ...string) (string, []interface{})  {
 /**
 拼接删除sql
  */
-func getDeleteSql(o interface{},sqlwhere ...string) (string, []interface{})  {
+func getDeleteSql(o interface{},dbSetting *DbSetting,sqlwhere ...string) (string, []interface{})  {
 	fieldMap := make(map[string]int)
 	wherePara := make([]interface{},0,5)
     //tags := getTag(o,sqlwhere...)
 	value := make([]interface{},0)
 	para,tableName := getNotValuePram(o)
-	sql := "delete from "+tableName+" %s "
+	sql := "delete from "+Format(tableName,dbSetting.tableFormat)+" %s "
 
 	sqlSuffix := "where 1=1 "
 	for _,s := range sqlwhere {
@@ -176,7 +179,7 @@ func getDeleteSql(o interface{},sqlwhere ...string) (string, []interface{})  {
 /**
 拼接查询
  */
-func find(oType reflect.Type, findWhere map[string]interface{}, findFields ...string) (string, []interface{}, []string) {
+func find(oType reflect.Type, findWhere map[string]interface{}, dbSetting *DbSetting, findFields ...string) (string, []interface{}, []string) {
 	//felid := make([]string,0)
 	value := make([]interface{},0)
 
@@ -185,9 +188,9 @@ func find(oType reflect.Type, findWhere map[string]interface{}, findFields ...st
 
 	//获取 指定 tags fields
 	if len(findFields)>0 {
-		tags,fields = getTagByFeild(oType,findFields)
+		tags,fields = getTagByFeild(oType,findFields,dbSetting)
 	}else{
-		tags,fields = getTagAndFeild(oType)
+		tags,fields = getTagAndFeild(oType,dbSetting)
 	}
 
 	//结构体
@@ -244,7 +247,6 @@ type PageInfo struct {
 const(
 	TIME  = "time.Time"
 
-
 	NULL_Int="null.Int"
 	NULL_String="null.String"
 	NULL_Time="null.Time"
@@ -268,10 +270,6 @@ const(
 	FIELD_String ="String"
 	FIELD_Bool   ="Bool"
 	FIELD_Valid  ="Valid"
-
-
-
-
 )
 
 /**
@@ -313,9 +311,6 @@ func conver(value reflect.Value,fType reflect.StructField) interface{}  {
 			t := value.FieldByName("Time").Interface().(time.Time)
 			return t.Format("2006-01-02 15:04:05")
 		}
-
-
-
 		return nil
 	default:
 		return nil
@@ -488,7 +483,7 @@ func getTag(o interface{},whereSql ...string) []string {
 /**
 获取tag feild
 */
-func getTagAndFeild(t reflect.Type) ([]string,[]string) {
+func getTagAndFeild(t reflect.Type,dbSetting *DbSetting) ([]string,[]string) {
 	tags := make([]string,0)
 	fields := make([]string,0)
 	ob := t
@@ -497,7 +492,7 @@ func getTagAndFeild(t reflect.Type) ([]string,[]string) {
 
 		tag := sField.Tag.Get("sql")
 		if len(tag)==0 {
-			tag="NULL"
+			tag=Format(sField.Name,dbSetting.fieldFormat)
 		}
 		tags=append(tags,tag)
 		fields=append(fields,sField.Name)
@@ -507,7 +502,7 @@ func getTagAndFeild(t reflect.Type) ([]string,[]string) {
 /**
 获取tag feild map
  */
-func getTagAndFeildMap(t reflect.Type) (*map[string]string, *map[string]string, *map[string]reflect.StructField, *map[string]reflect.StructField) {
+func getTagAndFeildMap(t reflect.Type, dbSetting *DbSetting) (*map[string]string, *map[string]string, *map[string]reflect.StructField, *map[string]reflect.StructField) {
 	tagFeildMap := make(map[string]string)
 	feildTagMap := make(map[string]string)
 	tagTypeMap := make(map[string]reflect.StructField)
@@ -518,7 +513,7 @@ func getTagAndFeildMap(t reflect.Type) (*map[string]string, *map[string]string, 
 
 		tag := sField.Tag.Get("sql")
 		if len(tag)==0 {
-			tag=sField.Name
+			tag=Format(sField.Name,dbSetting.fieldFormat)
 		}
 		tagFeildMap[tag]=sField.Name
 		tagTypeMap[tag]=sField
@@ -529,7 +524,7 @@ func getTagAndFeildMap(t reflect.Type) (*map[string]string, *map[string]string, 
 	return &tagFeildMap,&feildTagMap,&tagTypeMap,&feildTypeMap
 }
 
-func getTagByFeild(t reflect.Type, findFeilds []string) ([]string,[]string) {
+func getTagByFeild(t reflect.Type, findFeilds []string,dbSetting *DbSetting) ([]string,[]string) {
 	tags := make([]string,0)
 	fields := make([]string,0)
 	ob := t
@@ -540,10 +535,44 @@ func getTagByFeild(t reflect.Type, findFeilds []string) ([]string,[]string) {
 		}
 		tag := sField.Tag.Get("sql")
 		if len(tag)==0 {
-			tag="NULL"
+			tag=Format(sField.Name,dbSetting.fieldFormat)
 		}
 		tags=append(tags,tag)
 		fields=append(fields,sField.Name)
 	}
 	return tags,fields
+}
+
+//格式化
+func Format(str string,formatType int) string {
+	switch formatType {
+	case HUMP_UNDERLINE:
+		return UnderscoreName(str)
+	}
+	return str
+}
+
+
+// 驼峰式写法转为下划线写法
+func UnderscoreName(name string) string {
+	buffer := bytes.NewBufferString("")
+	for i, r := range name {
+		if unicode.IsUpper(r) {
+			if i != 0 {
+				buffer.WriteRune('_')
+			}
+			buffer.WriteRune(unicode.ToLower(r))
+		} else {
+			buffer.WriteRune(r)
+		}
+	}
+
+	return buffer.String()
+}
+
+// 下划线写法转为驼峰写法
+func CamelName(name string) string {
+	name = strings.Replace(name, "_", " ", -1)
+	name = strings.Title(name)
+	return strings.Replace(name, " ", "", -1)
 }

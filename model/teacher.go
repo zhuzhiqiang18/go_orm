@@ -12,7 +12,7 @@ type Teacher struct {
 	Name null.String `sql:"name"`
 	Address null.String `sql:"address"`
 	No null.String `sql:"no"`
-	ClassId null.Int `sql:"class_id"`
+	ClassId null.Int
 	Create null.Time `sql:"create_date"`
 	IsReading null.Bool `sql:"is_reading"`
 	High null.Float `sql:"high"`

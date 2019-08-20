@@ -1,7 +1,5 @@
 package main
 
-import "github.com/zhuzhiqiang18/go_orm/tests"
-
 func main() {
 	/*for i:=0;i<10000;i++ {
 		tests.TestSave()
@@ -18,6 +16,6 @@ func main() {
 	//tests.TestTx1()
 	//tests.TestGql()
 	//tests.TestNull()
-	tests.TestFindNull()
+	//tests.TestFindNull()
 
 }

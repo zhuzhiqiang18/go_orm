@@ -16,6 +16,7 @@ import (
  */
 func TestSave(){
 	db, err := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	db.DBSetting().SetTableFormat(go_orm.HUMP_UNDERLINE)
 	defer db.Close()
 	if err!=nil {
 		fmt.Println(err)
@@ -226,6 +227,8 @@ func TestFindNull()  {
 	gql.Where("name = ? ").Where("class_id = ?").Bind(&model.Teacher{}).SetPara("zzq",1)
 
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	db.DBSetting().SetFieldFormat(go_orm.HUMP_UNDERLINE)//驼峰下划线
+	db.DBSetting().SetTableFormat(go_orm.HUMP_UNDERLINE)//驼峰下划线
 	defer db.Close()
 	list := db.FindGql(&gql)
 
