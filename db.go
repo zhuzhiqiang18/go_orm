@@ -3,7 +3,6 @@ package go_orm
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/sirupsen/logrus"
 	"github.com/zhuzhiqiang18/go_orm/conn"
 	"github.com/zhuzhiqiang18/go_orm/logger"
 	"reflect"
@@ -111,69 +110,33 @@ func (db Db) NativeSql(nativeSql string, parameters ...interface{}) int64 {
 }
 
 func (db Db) FindGql(gql *Gql) *[]interface{} {
-	list := make([]interface{},0)
-	o := gql.GetBind()
-	oType := reflect.TypeOf(o)
-	oValue := reflect.ValueOf(o)
-	if oType.Kind() == reflect.Ptr{
-		oType = oType.Elem()
-		oValue = oValue.Elem()
-	}else{
-		panic("请传递指针类型")
-	}
-	logger.Debug(gql.GetGql(db.setting),gql.GetPara())
 
-	tagField, _, tagType, _ := getTagAndFeildMap(oType,db.setting)
-
-	stmt, err := db.abstractDb.Prepare(gql.GetGql(db.setting))
-	if err != nil {
-		panic(err)
-	}
-	defer stmt.Close()
-
-	para := gql.GetPara()
-	rows,err := stmt.Query(*(para)...)
-	if err !=nil {
-		panic(err)
-	}
-
-	defer rows.Close()
-	for rows.Next()  {
-		dataTypes,err :=rows.ColumnTypes()
-
-		if err != nil{
-			panic(err)
-		}
-		values := make([]sql.RawBytes,len(dataTypes) )
-		scans := make([]interface{}, len(dataTypes))
-
-		for i := range values {
-			scans[i] = &values[i]
-		}
-		err = rows.Scan(scans...)
-		if err!=nil{
-			panic(err)
-		}
-		converResult := mappingConverMap(dataTypes,&scans,tagField,tagType)
-		bean := resultMappingFieldValueMap(oValue,converResult)
-		list = append(list,bean)
-	}
-	return &list
+	return db.FindQuery(gql.GetBind(),gql.GetGql(db.setting),*(gql.GetPara())...)
 
 }
 
-func (db Db) FindQuery(o interface{}, findWhere map[string]interface{}, findFields ...string) *[]interface{} {
+func (db Db) FindQuery(o interface{}, sqlStr string, para ...interface{}) *[]interface{} {
 	list := make([]interface{},0)
 	oType := reflect.TypeOf(o)
 	oValue := reflect.ValueOf(o)
 	if oType.Kind() == reflect.Ptr{
 		oType = oType.Elem()
-		oValue = oValue.Elem()
+		//oValue = oValue.Elem()
 	}else{
 		panic("请传递指针类型")
 	}
-	//拼接sql
-	sqlStr, para, fields := find(oType,findWhere,db.setting,findFields...)
+
+	//判断是否是分片类型
+	/*isItem := true
+	if oType.Kind()==reflect.Slice{
+		isItem=false
+	}*/
+
+
+
+	/*if !isItem{
+		tItem = oValue.Type().Elem()
+	}*/
 
 	logger.Debug(sqlStr,para)
 
@@ -185,7 +148,6 @@ func (db Db) FindQuery(o interface{}, findWhere map[string]interface{}, findFiel
 
 	rows,err := stmt.Query(para...)
 	if err !=nil {
-		logrus.WithFields(logrus.Fields{}).Error(err)
 		panic(err)
 	}
 
@@ -206,13 +168,20 @@ func (db Db) FindQuery(o interface{}, findWhere map[string]interface{}, findFiel
 			panic(err)
 		}
 
-		converResult := mappingConver(dataTypes,scans)
-		bean := resultMapping(oValue,converResult,fields)
+		tagField, _, tagType, _ := getTagAndFeildMap(oType,db.setting)
+
+		converResult := mappingConverMap(dataTypes,&scans,tagField,tagType)
+		bean := resultMappingFieldValueMap(oValue,converResult)
+
 		list = append(list,bean)
 	}
 	return &list
 
 }
+
+
+
+
 
 
 

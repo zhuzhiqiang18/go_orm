@@ -71,27 +71,13 @@ func TestFindQuery()  {
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	//传类型地址
-	list := db.FindQuery(&model.Student{}, nil)
+	list := db.FindQuery(&model.Student{}, "select * from student ")
 	for _,stu := range *list {
 		fmt.Println(stu.(model.Student))
 	}
 }
 
-/**
-指定返回字段
- */
-func TestFindQueryField()  {
-	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
-	defer db.Close()
-	list := db.FindQuery(&model.Student{}, nil,"Name","No","Address")
-	for _,stu := range *list {
-		fmt.Println(stu.(model.Student))
-		/*fmt.Println(stu.(model.Student).Name)
-		fmt.Println(stu.(model.Student).No)
-		fmt.Println(stu.(model.Student).Address)*/
-	}
 
-}
 
 /**
 但表条件查询
@@ -99,7 +85,7 @@ func TestFindQueryField()  {
 func TestFindQueryWhere()  {
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
-	list := db.FindQuery(&model.Student{}, map[string]interface{}{"name": "张三"},"Name","No","Address")
+	list := db.FindQuery(&model.Student{}, "select * from student where name =?","张三")
 	for _,stu := range *list {
 		fmt.Println(stu.(model.Student).Name)
 		fmt.Println(stu.(model.Student).No)
@@ -239,3 +225,5 @@ func TestFindNull()  {
 
 	}
 }
+
+
