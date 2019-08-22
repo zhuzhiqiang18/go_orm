@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/zhuzhiqiang18/go_orm"
 	"github.com/zhuzhiqiang18/go_orm/model"
@@ -71,11 +70,22 @@ func TestFindQuery()  {
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	//传类型地址
-	list := db.FindQuery(&model.Student{}, "select * from student ")
-	for _,stu := range *list {
-		fmt.Println(stu.(model.Student))
+	list := make([]model.Student,0)
+	fmt.Printf("%p\n",list)
+	err := db.FindQuery(&list, "select * from student ")
+	if err!=nil {
+		fmt.Println(err)
+	}else {
+        fmt.Println(list)
+		for _,stu := range list {
+			fmt.Println(stu)
+		}
+
 	}
+
 }
+
+
 
 
 
@@ -85,12 +95,18 @@ func TestFindQuery()  {
 func TestFindQueryWhere()  {
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
-	list := db.FindQuery(&model.Student{}, "select * from student where name =?","张三")
-	for _,stu := range *list {
-		fmt.Println(stu.(model.Student).Name)
-		fmt.Println(stu.(model.Student).No)
-		fmt.Println(stu.(model.Student).Address)
+	list := make([]model.Student,0)
+	err := db.FindQuery(&list, "select * from student where name =?","张三")
+	if err!=nil {
+		fmt.Println(err)
+	}else {
+		for _,stu := range list {
+			fmt.Println(stu.Name)
+			fmt.Println(stu.No)
+			fmt.Println(stu.Address)
+		}
 	}
+
 }
 
 
@@ -178,7 +194,7 @@ func TestTx1()  {
 
 }
 
-func TestGql()  {
+/*func TestGql()  {
 	var gql go_orm.Gql
 	//select * from Student where name ="张三" and class_id = 1
 	gql.Where("name = ? ").Where("class_id = ?").Bind(&model.Student{}).SetPara("张三",1)
@@ -190,7 +206,7 @@ func TestGql()  {
 	for _,stu := range *list {
 		fmt.Println(stu)
 	}
-}
+}*/
 /**
 测试null包
  */
@@ -207,7 +223,7 @@ func TestNull()  {
 	fmt.Println("最后插入" , last)
 }
 
-func TestFindNull()  {
+/*func TestFindNull()  {
 	var gql go_orm.Gql
 	//select * from Student where name ="张三" and class_id = 1
 	gql.Where("name = ? ").Where("class_id = ?").Bind(&model.Teacher{}).SetPara("zzq",1)
@@ -224,6 +240,6 @@ func TestFindNull()  {
 		fmt.Println(string(jsonStr))
 
 	}
-}
+}*/
 
 

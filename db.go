@@ -2,6 +2,7 @@ package go_orm
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/zhuzhiqiang18/go_orm/conn"
 	"github.com/zhuzhiqiang18/go_orm/logger"
@@ -109,53 +110,62 @@ func (db Db) NativeSql(nativeSql string, parameters ...interface{}) int64 {
 	return affected
 }
 
-func (db Db) FindGql(gql *Gql) *[]interface{} {
+func (db Db) FindGql(gql *Gql) error {
 
 	return db.FindQuery(gql.GetBind(),gql.GetGql(db.setting),*(gql.GetPara())...)
 
 }
 
-func (db Db) FindQuery(o interface{}, sqlStr string, para ...interface{}) *[]interface{} {
+func (db Db) FindQuery(o interface{}, sqlStr string, para ...interface{}) error {
 	list := make([]interface{},0)
+
 	oType := reflect.TypeOf(o)
 	oValue := reflect.ValueOf(o)
+
+	fmt.Printf("%p\n",o)
+
 	if oType.Kind() == reflect.Ptr{
 		oType = oType.Elem()
-		//oValue = oValue.Elem()
+		oValue = oValue.Elem()
 	}else{
 		panic("请传递指针类型")
 	}
 
+
+
 	//判断是否是分片类型
-	/*isItem := true
+	isItem := true
 	if oType.Kind()==reflect.Slice{
 		isItem=false
-	}*/
+
+	}
 
 
-
-	/*if !isItem{
-		tItem = oValue.Type().Elem()
-	}*/
+	if !isItem{
+		oType = oValue.Type().Elem()
+		oValue = reflect.New(oType).Elem()
+	}
 
 	logger.Debug(sqlStr,para)
 
 	stmt, err := db.abstractDb.Prepare(sqlStr)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer stmt.Close()
 
 	rows,err := stmt.Query(para...)
 	if err !=nil {
-		panic(err)
+		return err
 	}
+
+	tagField, _, tagType, _ := getTagAndFeildMap(oType,db.setting)
 
 	defer rows.Close()
 	for rows.Next()  {
 		dataTypes,err :=rows.ColumnTypes()
 		if err != nil{
-			panic(err)
+			return err
 		}
 		values := make([]sql.RawBytes,len(dataTypes) )
 		scans := make([]interface{}, len(dataTypes))
@@ -165,18 +175,25 @@ func (db Db) FindQuery(o interface{}, sqlStr string, para ...interface{}) *[]int
 		}
 		err = rows.Scan(scans...)
 		if err!=nil{
-			panic(err)
+			return err
 		}
 
-		tagField, _, tagType, _ := getTagAndFeildMap(oType,db.setting)
 
 		converResult := mappingConverMap(dataTypes,&scans,tagField,tagType)
 		bean := resultMappingFieldValueMap(oValue,converResult)
 
-		list = append(list,bean)
+		if isItem {
+			return err
+		}else {
+			list = append(list,bean)
+		}
 	}
-	return &list
+	fmt.Println(list)
 
+	o=&list
+	fmt.Printf("%p\n",o)
+	//fmt.Println(o,123)
+	return err
 }
 
 
