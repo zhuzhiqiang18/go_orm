@@ -71,12 +71,10 @@ func TestFindQuery()  {
 	defer db.Close()
 	//传类型地址
 	list := make([]model.Student,0)
-	fmt.Printf("%p\n",list)
 	err := db.FindQuery(&list, "select * from student ")
 	if err!=nil {
 		fmt.Println(err)
 	}else {
-        fmt.Println(list)
 		for _,stu := range list {
 			fmt.Println(stu)
 		}

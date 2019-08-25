@@ -185,10 +185,11 @@ func (db Db) FindQuery(o interface{}, sqlStr string, para ...interface{}) error 
 		if isItem {
 			return err
 		}else {
+            results :=indirect(reflect.ValueOf(o))
+			results.Set(reflect.Append(results,reflect.ValueOf(bean)))
 			list = append(list,bean)
 		}
 	}
-	fmt.Println(list)
 
 	o=&list
 	fmt.Printf("%p\n",o)
@@ -197,7 +198,12 @@ func (db Db) FindQuery(o interface{}, sqlStr string, para ...interface{}) error 
 }
 
 
-
+func indirect(reflectValue reflect.Value) reflect.Value {
+	for reflectValue.Kind() == reflect.Ptr {
+		reflectValue = reflectValue.Elem()
+	}
+	return reflectValue
+}
 
 
 
