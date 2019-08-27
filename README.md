@@ -80,20 +80,31 @@ db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
 	//传类型地址
-	list := db.FindQuery(&model.Student{}, nil)
-	for _,stu := range *list {
-		fmt.Println(stu.(model.Student))
+	list := make([]model.Student,0)
+	err := db.FindQuery(&list, "select * from student ")
+	if err!=nil {
+		fmt.Println(err)
+	}else {
+		for _,stu := range list {
+			fmt.Println(stu)
+		}
+
 	}
 ```
 ### 单表指定字段查询
 ```go
 db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
-	list := db.FindQuery(&model.Student{}, nil,"Name","No","Address")
-	for _,stu := range *list {
-		fmt.Println(stu.(model.Student).Name)
-		fmt.Println(stu.(model.Student).No)
-		fmt.Println(stu.(model.Student).Address)
+	//传类型地址
+	list := make([]model.Student,0)
+	err := db.FindQuery(&list, "select name,no from student ")
+	if err!=nil {
+		fmt.Println(err)
+	}else {
+		for _,stu := range list {
+			fmt.Println(stu)
+		}
+
 	}
 ```
 ### 条件查询
@@ -103,11 +114,16 @@ db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 ```go
 db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
-	list := db.FindQuery(&model.Student{}, map[string]interface{}{"name": "张三"},"Name","No","Address")
-	for _,stu := range *list {
-		fmt.Println(stu.(model.Student).Name)
-		fmt.Println(stu.(model.Student).No)
-		fmt.Println(stu.(model.Student).Address)
+	//传类型地址
+	list := make([]model.Student,0)
+	err := db.FindQuery(&list, "select name,no from student where name=? ","张三")
+	if err!=nil {
+		fmt.Println(err)
+	}else {
+		for _,stu := range list {
+			fmt.Println(stu)
+		}
+
 	}
 ```
 ### 联合查询

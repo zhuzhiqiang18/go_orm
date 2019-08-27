@@ -117,7 +117,6 @@ func (db Db) FindGql(gql *Gql) error {
 }
 
 func (db Db) FindQuery(o interface{}, sqlStr string, para ...interface{}) error {
-	list := make([]interface{},0)
 
 	oType := reflect.TypeOf(o)
 	oValue := reflect.ValueOf(o)
@@ -131,21 +130,16 @@ func (db Db) FindQuery(o interface{}, sqlStr string, para ...interface{}) error 
 		panic("请传递指针类型")
 	}
 
-
-
 	//判断是否是分片类型
 	isItem := true
 	if oType.Kind()==reflect.Slice{
 		isItem=false
-
 	}
-
 
 	if !isItem{
 		oType = oValue.Type().Elem()
 		oValue = reflect.New(oType).Elem()
 	}
-
 	logger.Debug(sqlStr,para)
 
 	stmt, err := db.abstractDb.Prepare(sqlStr)
@@ -187,13 +181,9 @@ func (db Db) FindQuery(o interface{}, sqlStr string, para ...interface{}) error 
 		}else {
             results :=indirect(reflect.ValueOf(o))
 			results.Set(reflect.Append(results,reflect.ValueOf(bean)))
-			list = append(list,bean)
+
 		}
 	}
-
-	o=&list
-	fmt.Printf("%p\n",o)
-	//fmt.Println(o,123)
 	return err
 }
 
