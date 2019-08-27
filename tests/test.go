@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/zhuzhiqiang18/go_orm"
 	"github.com/zhuzhiqiang18/go_orm/model"
@@ -221,23 +222,27 @@ func TestNull()  {
 	fmt.Println("最后插入" , last)
 }
 
-/*func TestFindNull()  {
+func TestFindNull()  {
 	var gql go_orm.Gql
+	teachers := make([]model.Teacher,0)
 	//select * from Student where name ="张三" and class_id = 1
-	gql.Where("name = ? ").Where("class_id = ?").Bind(&model.Teacher{}).SetPara("zzq",1)
+	gql.Where("name = ? ").Where("class_id = ?").Bind(&teachers).SetPara("zzq",1)
 
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	db.DBSetting().SetFieldFormat(go_orm.HUMP_UNDERLINE)//驼峰下划线
 	db.DBSetting().SetTableFormat(go_orm.HUMP_UNDERLINE)//驼峰下划线
 	defer db.Close()
-	list := db.FindGql(&gql)
+	err := db.FindGql(&gql)
+	if err != nil{
+		panic(err)
+	}
 
-	for _,stu := range *list {
-		fmt.Println(stu)
-		jsonStr,_:=json.Marshal(stu)
+	for _,th := range teachers {
+		fmt.Println(th)
+		jsonStr,_:=json.Marshal(th)
 		fmt.Println(string(jsonStr))
 
 	}
-}*/
+}
 
 

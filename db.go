@@ -111,34 +111,42 @@ func (db Db) NativeSql(nativeSql string, parameters ...interface{}) int64 {
 }
 
 func (db Db) FindGql(gql *Gql) error {
-
-	return db.FindQuery(gql.GetBind(),gql.GetGql(db.setting),*(gql.GetPara())...)
-
+	return db.FindQuery(gql.GetBind(),gql.QueryBody,gql.GetGql(db.setting),*(gql.GetPara())...)
 }
 
 func (db Db) FindQuery(o interface{}, sqlStr string, para ...interface{}) error {
+	queryBody := &QueryBody{}
+	queryBody.Db=&db
+	queryBody.T=o
 
-	oType := reflect.TypeOf(o)
-	oValue := reflect.ValueOf(o)
 
-	fmt.Printf("%p\n",o)
+	fmt.Println(queryBody)
 
-	if oType.Kind() == reflect.Ptr{
-		oType = oType.Elem()
-		oValue = oValue.Elem()
+	queryBody.Ttype=reflect.TypeOf(queryBody.T)
+	queryBody.Tvalue=reflect.ValueOf(queryBody.T)
+
+
+	if queryBody.Ttype.Kind() == reflect.Ptr{
+		queryBody.Ttype = queryBody.Ttype.Elem()
+		queryBody.Tvalue = queryBody.Tvalue.Elem()
 	}else{
 		panic("请传递指针类型")
 	}
-
 	//判断是否是分片类型
-	isItem := true
-	if oType.Kind()==reflect.Slice{
-		isItem=false
+
+	if queryBody.Ttype.Kind()==reflect.Slice{
+		queryBody.IsSlice=true
 	}
 
-	if !isItem{
-		oType = oValue.Type().Elem()
-		oValue = reflect.New(oType).Elem()
+	if queryBody.IsSlice{
+		queryBody.Ttype = queryBody.Tvalue.Type().Elem()
+		tableNames := strings.Split(queryBody.Ttype.String(),".")
+		if len(tableNames)>0 {
+			queryBody.TableName = tableNames[len(tableNames)-1]
+		}
+		queryBody.Tvalue = reflect.New(queryBody.Ttype).Elem()
+	}else{
+		queryBody.TableName = queryBody.Ttype.Name()
 	}
 	logger.Debug(sqlStr,para)
 
@@ -153,7 +161,7 @@ func (db Db) FindQuery(o interface{}, sqlStr string, para ...interface{}) error 
 		return err
 	}
 
-	tagField, _, tagType, _ := getTagAndFeildMap(oType,db.setting)
+	tagField, _, tagType, _ := getTagAndFeildMap(queryBody.Ttype,db.setting)
 
 	defer rows.Close()
 	for rows.Next()  {
@@ -174,9 +182,9 @@ func (db Db) FindQuery(o interface{}, sqlStr string, para ...interface{}) error 
 
 
 		converResult := mappingConverMap(dataTypes,&scans,tagField,tagType)
-		bean := resultMappingFieldValueMap(oValue,converResult)
+		bean := resultMappingFieldValueMap(queryBody.Tvalue,converResult)
 
-		if isItem {
+		if !queryBody.IsSlice {
 			return err
 		}else {
             results :=indirect(reflect.ValueOf(o))

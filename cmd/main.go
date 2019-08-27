@@ -1,7 +1,5 @@
 package main
 
-import "github.com/zhuzhiqiang18/go_orm/tests"
-
 func main() {
 	/*for i:=0;i<10000;i++ {
 		tests.TestSave()
@@ -10,7 +8,7 @@ func main() {
 	//tests.TestDelete()
 	//tests.TestUpdate()
 	//tests.TestFindQuery()
-	tests.TestFindQueryWhere()
+	//tests.TestFindQueryWhere()
 	//tests.TestNativeSql()
 	//tests.TestAutoInsertId()
 	//tests.TestTx()
