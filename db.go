@@ -2,7 +2,6 @@ package go_orm
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/zhuzhiqiang18/go_orm/conn"
 	"github.com/zhuzhiqiang18/go_orm/logger"
@@ -111,43 +110,12 @@ func (db Db) NativeSql(nativeSql string, parameters ...interface{}) int64 {
 }
 
 func (db Db) FindGql(gql *Gql) error {
-	return db.FindQuery(gql.GetBind(),gql.QueryBody,gql.GetGql(db.setting),*(gql.GetPara())...)
+	return db.FindQuery(gql.GetBind(),gql.GetGql(db.setting),*(gql.GetPara())...)
 }
 
-func (db Db) FindQuery(o interface{}, sqlStr string, para ...interface{}) error {
-	queryBody := &QueryBody{}
-	queryBody.Db=&db
-	queryBody.T=o
 
-
-	fmt.Println(queryBody)
-
-	queryBody.Ttype=reflect.TypeOf(queryBody.T)
-	queryBody.Tvalue=reflect.ValueOf(queryBody.T)
-
-
-	if queryBody.Ttype.Kind() == reflect.Ptr{
-		queryBody.Ttype = queryBody.Ttype.Elem()
-		queryBody.Tvalue = queryBody.Tvalue.Elem()
-	}else{
-		panic("请传递指针类型")
-	}
-	//判断是否是分片类型
-
-	if queryBody.Ttype.Kind()==reflect.Slice{
-		queryBody.IsSlice=true
-	}
-
-	if queryBody.IsSlice{
-		queryBody.Ttype = queryBody.Tvalue.Type().Elem()
-		tableNames := strings.Split(queryBody.Ttype.String(),".")
-		if len(tableNames)>0 {
-			queryBody.TableName = tableNames[len(tableNames)-1]
-		}
-		queryBody.Tvalue = reflect.New(queryBody.Ttype).Elem()
-	}else{
-		queryBody.TableName = queryBody.Ttype.Name()
-	}
+func (db Db) FindQuery(o interface{},sqlStr string, para ...interface{}) error {
+	queryBody := QueryBody{}.ConstQueryBody(o,db)
 	logger.Debug(sqlStr,para)
 
 	stmt, err := db.abstractDb.Prepare(sqlStr)

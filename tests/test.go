@@ -193,19 +193,27 @@ func TestTx1()  {
 
 }
 
-/*func TestGql()  {
+func TestGql()  {
 	var gql go_orm.Gql
+	students := make([]model.Student,0)
+
+
 	//select * from Student where name ="张三" and class_id = 1
-	gql.Where("name = ? ").Where("class_id = ?").Bind(&model.Student{}).SetPara("张三",1)
+	gql.Where("name = ? ").Where("class_id = ?").Bind(&students).SetPara("张三",1)
 
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	defer db.Close()
-	list := db.FindGql(&gql)
+	err := db.FindGql(&gql)
 
-	for _,stu := range *list {
+	if err!=nil {
+		fmt.Println(err)
+		return
+	}
+
+	for _,stu := range students {
 		fmt.Println(stu)
 	}
-}*/
+}
 /**
 测试null包
  */

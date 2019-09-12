@@ -2,8 +2,6 @@ package go_orm
 
 import (
 	"fmt"
-	"reflect"
-	"strings"
 )
 
 /**
@@ -20,6 +18,8 @@ type Gql struct {
 	isCount bool
 	selectSql string
 	t interface{}
+
+	tableName string
 	
 	QueryBody *QueryBody
 	
@@ -100,7 +100,6 @@ func (gql *Gql) Bind(bind interface{}) *Gql {
 	gql.t=bind
 	gql.QueryBody=&QueryBody{}
 	gql.QueryBody.T=bind
-	process(gql.QueryBody)
 	return gql
 }
 
@@ -110,7 +109,7 @@ func (gql *Gql) GetFields() ([] string) {
 
 func process(queryBody *QueryBody) {
 
-	queryBody.Ttype=reflect.TypeOf(queryBody.T)
+	/*queryBody.Ttype=reflect.TypeOf(queryBody.T)
 	queryBody.Tvalue=reflect.ValueOf(queryBody.T)
 
 
@@ -135,7 +134,7 @@ func process(queryBody *QueryBody) {
 		queryBody.Tvalue = reflect.New(queryBody.Ttype).Elem()
 	}else{
 		queryBody.TableName = queryBody.Ttype.Name()
-	}
+	}*/
 }
 
 
