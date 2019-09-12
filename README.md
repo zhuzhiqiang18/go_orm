@@ -173,17 +173,23 @@ db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 ```
 ## gql查询
 ```go
-var gql go_orm.Gql
-	//select * from Student where name ="张三" and class_id = 1
-	gql.Where("name = ? ").Where("class_id = ?").Bind(&model.Student{}).SetPara("张三",1)
-
-	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
-	defer db.Close()
-	list := db.FindGql(&gql)
-	
-	for _,stu := range *list {
-		fmt.Println(stu)
-	}
+	var gql go_orm.Gql
+    	students := make([]model.Student,0)
+    	//select * from Student where name ="张三" and class_id = 1
+    	gql.Where("name = ? ").Where("class_id = ?").Bind(&students).SetPara("张三",1)
+    
+    	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+    	defer db.Close()
+    	err := db.FindGql(&gql)
+    
+    	if err!=nil {
+    		fmt.Println(err)
+    		return
+    	}
+    
+    	for _,stu := range students {
+    		fmt.Println(stu)
+    	}
 ```
 # NULL
 >GO中没有NULL 为适配数据库中的NULL 以及JSON的NULL 引入第三方包 [gopkg.in/guregu/null.v3](https://github.com/guregu/null) 方便数据适配
@@ -215,26 +221,26 @@ var teacher model.Teacher
 	fmt.Println("改变条数" , count)
 	fmt.Println("最后插入" , last)
 
+
 var gql go_orm.Gql
-	//select * from Student where name ="张三" and class_id = 1
-	gql.Where("name = ? ").Where("class_id = ?").Bind(&model.Teacher{}).SetPara("zzq",1)
+	teachers := make([]model.Teacher,0)
+	//select * from Student where name ="zzq" and class_id = 1
+	gql.Where("name = ? ").Where("is_reading = ?").Bind(&teachers).SetPara("zzq",1)
 
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	db.DBSetting().SetFieldFormat(go_orm.HUMP_UNDERLINE)//驼峰下划线
+	db.DBSetting().SetTableFormat(go_orm.HUMP_UNDERLINE)//驼峰下划线
 	defer db.Close()
-	list := db.FindGql(&gql)
-
-	for _,stu := range *list {
-		fmt.Println(stu)
-		jsonStr,_:=json.Marshal(stu)
-		fmt.Println(string(jsonStr))
-
+	err := db.FindGql(&gql)
+	if err != nil{
+		panic(err)
 	}
 
-//{{{85 true}} {{zzq true}} {{ false}} {{ false}} {{1 true}} {2019-08-19 15:58:31.148735 +0800 CST m=+0.003854484 false} {{true true}} {{0 false}} {{0 false}}}
-
-//{"Id":85,"Name":"zzq","Address":null,"No":null,"ClassId":1,"Create":null,"IsReading":true,"High":null,"Weight":null}
-
-
+	for _,th := range teachers {
+		fmt.Println(th)
+		jsonStr,_:=json.Marshal(th)
+		fmt.Println(string(jsonStr))
+//{"Id":1,"Name":"zzq","Address":null,"No":null,"ClassId":null,"Create":"2019-08-20T14:48:12Z","IsReading":true,"High":null,"Weight":null}
 
 
 
