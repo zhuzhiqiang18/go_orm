@@ -15,8 +15,8 @@ func main() {
 	//tests.TestAutoInsertId()
 	//tests.TestTx()
 	//tests.TestTx1()
-	tests.TestGql()
+	//tests.TestGql()
 	//tests.TestNull()
-	//tests.TestFindNull()
+	tests.TestFindNull()
 
 }

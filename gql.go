@@ -98,8 +98,6 @@ func (gql *Gql) GetBind() interface{}  {
 
 func (gql *Gql) Bind(bind interface{}) *Gql {
 	gql.t=bind
-	gql.QueryBody=&QueryBody{}
-	gql.QueryBody.T=bind
 	return gql
 }
 

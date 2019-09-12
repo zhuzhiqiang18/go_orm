@@ -109,13 +109,35 @@ func (db Db) NativeSql(nativeSql string, parameters ...interface{}) int64 {
 	return affected
 }
 
+/**
+供外部调用gql查询
+ */
 func (db Db) FindGql(gql *Gql) error {
-	return db.FindQuery(gql.GetBind(),gql.GetGql(db.setting),*(gql.GetPara())...)
+	return db.queryGQL(gql)
+}
+
+/**
+gql 查询
+ */
+func (db Db) queryGQL(gql *Gql) error {
+	gql.QueryBody= QueryBody{}.ConstQueryBody(gql.t,db)
+	return db.exeQuery(gql.QueryBody,gql.GetGql(db.setting),gql.para)
 }
 
 
+/**
+供外部调用查询
+*/
 func (db Db) FindQuery(o interface{},sqlStr string, para ...interface{}) error {
 	queryBody := QueryBody{}.ConstQueryBody(o,db)
+
+	return db.exeQuery(queryBody,sqlStr,para)
+}
+
+/**
+执行查询
+ */
+func (db Db) exeQuery(queryBody *QueryBody,sqlStr string, para []interface{}) error {
 	logger.Debug(sqlStr,para)
 
 	stmt, err := db.abstractDb.Prepare(sqlStr)
@@ -155,13 +177,15 @@ func (db Db) FindQuery(o interface{},sqlStr string, para ...interface{}) error {
 		if !queryBody.IsSlice {
 			return err
 		}else {
-            results :=indirect(reflect.ValueOf(o))
+			results :=indirect(reflect.ValueOf(queryBody.T))
 			results.Set(reflect.Append(results,reflect.ValueOf(bean)))
 
 		}
 	}
 	return err
 }
+
+
 
 
 func indirect(reflectValue reflect.Value) reflect.Value {

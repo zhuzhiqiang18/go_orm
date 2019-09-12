@@ -230,11 +230,14 @@ func TestNull()  {
 	fmt.Println("最后插入" , last)
 }
 
+/**
+支持null值
+ */
 func TestFindNull()  {
 	var gql go_orm.Gql
 	teachers := make([]model.Teacher,0)
-	//select * from Student where name ="张三" and class_id = 1
-	gql.Where("name = ? ").Where("class_id = ?").Bind(&teachers).SetPara("zzq",1)
+	//select * from Student where name ="zzq" and class_id = 1
+	gql.Where("name = ? ").Where("is_reading = ?").Bind(&teachers).SetPara("zzq",1)
 
 	db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
 	db.DBSetting().SetFieldFormat(go_orm.HUMP_UNDERLINE)//驼峰下划线
@@ -249,7 +252,7 @@ func TestFindNull()  {
 		fmt.Println(th)
 		jsonStr,_:=json.Marshal(th)
 		fmt.Println(string(jsonStr))
-
+//{"Id":1,"Name":"zzq","Address":null,"No":null,"ClassId":null,"Create":"2019-08-20T14:48:12Z","IsReading":true,"High":null,"Weight":null}
 	}
 }
 
