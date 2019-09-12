@@ -12,6 +12,8 @@
 8. [NULL](#null)
 9. map
 10. 分页
+11.  [命名规则（驼峰转为下划线）](#命名规则)
+
 
 # ORM 
 使用反射
@@ -245,4 +247,11 @@ var gql go_orm.Gql
 
 
 ```
+# 命名规则
+```go
+db, _ := go_orm.Open("root","123456","127.0.0.1",3306,"go_test")
+	db.DBSetting().SetFieldFormat(go_orm.HUMP_UNDERLINE)//字段驼峰转下划线
+	db.DBSetting().SetTableFormat(go_orm.HUMP_UNDERLINE)//表名驼峰转下划线
+```
+字段设置驼峰转下划线 如字段tag为空则转下划线方式 如设置tag 则使用tag
 
